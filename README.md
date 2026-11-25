@@ -43,3 +43,12 @@ python3 server.py 8080
 | **Start** | `Enter` / `P` | `START` |
 | Quick Search | `Ctrl+K` / `Cmd+K` | `🔍` Button |
 | 2-Player Room | Click `👥 2P` inside player | `🔗 JOIN 2P` on homepage |
+
+---
+
+## 🔄 GitHub Actions CI/CD Pipeline
+
+Every push and pull request to `main` automatically runs [ci-cd.yml](.github/workflows/ci-cd.yml):
+1. **CI Gate (`ci-test`)**: Validates Python/JS syntax and executes `tests/test_owasp_security.py` (testing A01 path blocking, strict `script-src 'self'` CSP, OWASP headers, CSWSH `Origin` rejection, 6-char room codes, and WebSocket P2 input relay).
+2. **CD Auto-Deploy (`deploy`)**: On pushes to `main`, deploys to the VPS via SSH and restarts `ascii-game.service` automatically once `DEPLOY_HOST`, `DEPLOY_USER`, and `DEPLOY_SSH_KEY` are added under **GitHub Settings → Secrets and variables → Actions**.
+

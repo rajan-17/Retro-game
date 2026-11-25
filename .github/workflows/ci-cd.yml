@@ -1,0 +1,81 @@
+name: Nexus Retro Arcade CI/CD
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ci-test:
+    name: Syntax & OWASP Top 10 Security Gate
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python & Node.js
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Validate Python & JavaScript Syntax
+        run: |
+          python3 -m py_compile server.py
+          node -c js/nexus.js
+          node -c js/player.js
+          node -c js/controller.js
+          node -c js/netplay.js
+          node -c js/qr.js
+
+      - name: Run Automated OWASP Top 10 & Multiplayer Verification
+        run: python3 tests/test_owasp_security.py
+
+  deploy:
+    name: Deploy to Production Server
+    needs: ci-test
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check Deployment Secrets
+        id: check_secrets
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+        run: |
+          if [ -n "$DEPLOY_HOST" ] && [ -n "$DEPLOY_USER" ] && [ -n "$DEPLOY_SSH_KEY" ]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "Deployment secrets (DEPLOY_HOST, DEPLOY_USER, DEPLOY_SSH_KEY) are not set yet. Skipping remote deploy cleanly."
+          fi
+
+      - name: Deploy & Restart Systemd Service via SSH
+        if: steps.check_secrets.outputs.configured == 'true'
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_PORT: ${{ secrets.DEPLOY_PORT || '22' }}
+        run: |
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh -i ~/.ssh/deploy_key \
+              -p "$DEPLOY_PORT" \
+              -o StrictHostKeyChecking=accept-new \
+              -o ConnectTimeout=15 \
+              "${DEPLOY_USER}@${DEPLOY_HOST}" \
+              'cd /home/ubuntu/ascii-platformer && git pull --ff-only origin main && sudo systemctl restart ascii-game.service && sleep 3 && systemctl is-active ascii-game.service'
+          rm -f ~/.ssh/deploy_key
