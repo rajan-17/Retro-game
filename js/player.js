@@ -41,8 +41,17 @@
     function resize() {
         const container = document.querySelector('.stage-wrapper');
         if (!container) return;
-        const cw = container.clientWidth;
-        const ch = container.clientHeight;
+        // Usable area = container minus its padding, minus the HUD when the responsive CSS
+        // places it in the flow above the screen (portrait phones) instead of overlaying it.
+        const cs = getComputedStyle(container);
+        let cw = container.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+        let ch = container.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+        const hud = container.querySelector('.hud-overlay');
+        if (hud && getComputedStyle(hud).position === 'static') {
+            ch -= hud.offsetHeight + (parseFloat(cs.rowGap) || 0);
+        }
+        cw = Math.max(0, cw - 6);   // room for the 3px border on each side
+        ch = Math.max(0, ch - 6);
         const aspect = canvas.width / canvas.height;
 
         let dw = cw;
@@ -63,6 +72,14 @@
     }
     window.addEventListener('resize', resize);
     window.addEventListener('orientationchange', () => setTimeout(resize, 120));
+    // Re-fit when the stage or HUD changes size (HUD wraps when button labels change, fonts load…)
+    if (window.ResizeObserver) {
+        const ro = new ResizeObserver(() => resize());
+        const stageEl = document.querySelector('.stage-wrapper');
+        const hudEl = document.querySelector('.hud-overlay');
+        if (stageEl) ro.observe(stageEl);
+        if (hudEl) ro.observe(hudEl);
+    }
     if (window.visualViewport) {
         window.visualViewport.addEventListener('resize', resize);
     }
@@ -363,10 +380,22 @@
         }
     }
 
+    let captureKeepAlive = null;
     function getHostMediaStream() {
         const stream = canvas.captureStream ? canvas.captureStream(60) : new MediaStream();
         if (audioDestNode && audioDestNode.stream) {
             audioDestNode.stream.getAudioTracks().forEach(t => stream.addTrack(t));
+        }
+        // captureStream only emits a frame when the canvas is repainted, so static screens
+        // (title cards, pause menus, Game Boy intros) would leave the guest staring at black.
+        // Force a frame a few times per second so the guest always has the current picture.
+        const vt = stream.getVideoTracks()[0];
+        if (vt && typeof vt.requestFrame === 'function') {
+            if (captureKeepAlive) clearInterval(captureKeepAlive);
+            captureKeepAlive = setInterval(() => {
+                if (vt.readyState === 'live') vt.requestFrame();
+                else { clearInterval(captureKeepAlive); captureKeepAlive = null; }
+            }, 200);
         }
         return stream;
     }
@@ -440,8 +469,44 @@
     NexusNetplay.on('roomClosed', () => {
         if (isGuestMode) {
             document.getElementById('gameTitleBadge').textContent = 'HOST DISCONNECTED';
+            btn2PMode.textContent = '👥 HOST LEFT';
         }
     });
+
+    // Server-side errors: unknown/expired room, room full, rate limit, bad ROM.
+    NexusNetplay.on('error', (err) => {
+        const raw = String((err && err.message) || 'Connection error');
+        const short = /not found|expired/i.test(raw) ? 'ROOM NOT FOUND'
+            : /full/i.test(raw) ? 'ROOM FULL'
+            : /too many|rate/i.test(raw) ? 'TRY AGAIN SOON'
+            : 'CONNECTION ERROR';
+        if (isGuestMode) {
+            document.getElementById('gameTitleBadge').textContent = short;
+            btn2PMode.textContent = `👥 ${short}`;
+            showGuestNotice(short, raw);
+        } else if (mpStatusText) {
+            mpStatusText.textContent = short;
+        }
+    });
+
+    function showGuestNotice(title, detail) {
+        let box = document.getElementById('guestNotice');
+        if (!box) {
+            box = document.createElement('div');
+            box.id = 'guestNotice';
+            box.className = 'guest-notice';
+            const h = document.createElement('strong');
+            const p = document.createElement('p');
+            const a = document.createElement('a');
+            a.href = 'index.html';
+            a.target = '_top';   // the player usually runs inside the arcade's cinema iframe
+            a.textContent = '◀ BACK TO ARCADE';
+            box.append(h, p, a);
+            document.querySelector('.stage-wrapper').appendChild(box);
+        }
+        box.querySelector('strong').textContent = title;
+        box.querySelector('p').textContent = detail;
+    }
 
     if (guestAudioBanner) {
         guestAudioBanner.addEventListener('click', () => {

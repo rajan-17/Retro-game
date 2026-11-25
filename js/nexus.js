@@ -4875,6 +4875,28 @@
         return !!g && (g.ps1 || g.console === 'ps1');
     }
 
+    function isGbGame(g) {
+        return !!g && (g.gb || g.console === 'gb' || g.console === 'gbc');
+    }
+
+    // Many NES entries (Hall of Fame fill-ins, KNOWN_GAMES matches) carry no `nes` flag,
+    // so classify by exclusion: everything that isn't Game Boy or PlayStation runs on the NES core.
+    function isNesGame(g) {
+        return !!g && !isGbGame(g) && !isPs1(g);
+    }
+
+    function updateArcadeStats() {
+        const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = String(v); };
+        const nes = allGames.filter(isNesGame).length;
+        const gb = allGames.filter(isGbGame).length;
+        const ps1 = allGames.filter(isPs1).length;
+        set('statTotal', allGames.length);
+        set('statNes', nes);
+        set('statGb', gb);
+        set('statPs1', ps1);
+        set('hsbMarquee', `🎮 NES (${nes}) • 🟩 GB/GBC (${gb}) • 💿 PS1 (${ps1}) • ⚡ 60 FPS • CLICK TO SWITCH CONSOLES • `);
+    }
+
     function isSafeRomPath(rom) {
         return typeof rom === 'string' && !rom.includes('..') && !rom.includes('\\') &&
             (VALID_ROM_PATH_RE.test(rom.trim()) || PS1_ROM_PATH_RE.test(rom.trim()));
@@ -4899,7 +4921,7 @@
         const filtered = allGames.filter(g => {
             const isHoF = g.top100 || g.top50 || g.top20 || g.hall_of_fame;
             const isGb = g.gb || g.console === 'gb' || g.console === 'gbc';
-            const isNes = g.nes || g.console === 'nes';
+            const isNes = isNesGame(g);
             const isMp = isMultiplayerGame(g);
             const matchFilter = (activeFilter === 'all') ||
                 ((activeFilter === 'top100' || activeFilter === 'top50' || activeFilter === 'top20') && isHoF) ||
@@ -4930,7 +4952,9 @@
         } else if (activeFilter === 'gb') {
             filtered.sort((a, b) => (b.review_score ? 1 : 0) - (a.review_score ? 1 : 0) || a.title.localeCompare(b.title));
         } else if (activeFilter === 'ps1') {
-            filtered.sort((a, b) => (a.rank || 999) - (b.rank || 999) || a.title.localeCompare(b.title));
+            // Playable discs first, then the Hall of Fame by rank.
+            filtered.sort((a, b) => (b.available ? 1 : 0) - (a.available ? 1 : 0)
+                || (a.rank || 999) - (b.rank || 999) || a.title.localeCompare(b.title));
         }
 
         if (filtered.length === 0) {
@@ -4959,8 +4983,8 @@
                     cardTop.appendChild(createEl('span', 'card-system-tag', g.system));
                 }
             } else if ((g.top100 || g.top50 || g.top20 || g.hall_of_fame) && g.rank) {
-                const rankEmoji = g.rank === 1 ? '👑' : g.rank === 2 ? '🏆' : g.rank === 3 ? '⭐' : `#${g.rank}`;
-                cardTop.appendChild(createEl('span', 'card-rank-badge', `${rankEmoji} Rank ${g.rank}`));
+                const rankEmoji = g.rank === 1 ? '👑 ' : g.rank === 2 ? '🏆 ' : g.rank === 3 ? '⭐ ' : '';
+                cardTop.appendChild(createEl('span', 'card-rank-badge', `${rankEmoji}RANK #${g.rank}`));
                 cardTop.appendChild(createEl('span', 'card-review-badge', g.review_score || '★ 9.5+'));
             } else if (g.gb || g.console === 'gb' || g.console === 'gbc') {
                 const badgeClass = g.console === 'gbc' ? 'badge-console-gbc' : 'badge-console-gb';
@@ -4979,19 +5003,24 @@
             }
 
             const coverContainer = createEl('div', 'card-cover-container');
-            const img = createEl('img', 'card-cover-img');
-            img.src = g.cover || `covers/${g.id}.png`;
-            img.alt = g.title;
-            img.decoding = 'async';
-            if (idx >= 12) img.loading = 'lazy';
             const fallback = createEl('div', 'card-cover-fallback', g.icon || '🎮');
-            fallback.style.display = 'none';
-            img.addEventListener('error', () => {
-                img.style.display = 'none';
-                fallback.style.display = 'block';
-            });
-            coverContainer.appendChild(img);
-            coverContainer.appendChild(fallback);
+            // cover === null means the server knows there is no box art: skip the doomed request.
+            if (g.cover === null) {
+                coverContainer.appendChild(fallback);
+            } else {
+                const img = createEl('img', 'card-cover-img');
+                img.src = g.cover || `covers/${g.id}.png`;
+                img.alt = g.title;
+                img.decoding = 'async';
+                if (idx >= 12) img.loading = 'lazy';
+                fallback.style.display = 'none';
+                img.addEventListener('error', () => {
+                    img.style.display = 'none';
+                    fallback.style.display = 'block';
+                });
+                coverContainer.appendChild(img);
+                coverContainer.appendChild(fallback);
+            }
 
             const cardFooter = createEl('div', 'card-footer');
             cardFooter.appendChild(createEl('div', 'card-title', g.title));
@@ -5023,6 +5052,7 @@
 
         updateCategoryPills();
         updateArcadeTicker();
+        updateArcadeStats();
     }
 
     function updateCategoryPills() {
@@ -5031,8 +5061,8 @@
             let count = 0;
             if (f === 'all') count = allGames.length;
             else if (f === 'top100' || f === 'top50' || f === 'top20') count = allGames.filter(g => g.top100 || g.top50 || g.top20 || g.hall_of_fame).length;
-            else if (f === 'gb') count = allGames.filter(g => g.gb || g.console === 'gb' || g.console === 'gbc').length;
-            else if (f === 'nes') count = allGames.filter(g => g.nes || g.console === 'nes').length;
+            else if (f === 'gb') count = allGames.filter(isGbGame).length;
+            else if (f === 'nes') count = allGames.filter(isNesGame).length;
             else if (f === 'ps1') count = allGames.filter(g => isPs1(g)).length;
             else if (f === 'multiplayer') count = allGames.filter(g => isMultiplayerGame(g)).length;
             else count = allGames.filter(g => g.system && g.system.toLowerCase() === f.toLowerCase()).length;
@@ -5139,8 +5169,10 @@
 
         const spotlightCoverImg = document.getElementById('spotlightCoverImg');
         if (spotlightCoverImg) {
+            // No box art (cover === null): hide the frame image instead of requesting a missing file.
+            spotlightCoverImg.style.visibility = game.cover === null ? 'hidden' : '';
             const coverSrc = game.cover || `covers/${game.id}.png`;
-            if (!spotlightCoverImg.src.endsWith(coverSrc)) {
+            if (game.cover !== null && !spotlightCoverImg.src.endsWith(coverSrc)) {
                 spotlightCoverImg.style.opacity = '0.35';
                 spotlightCoverImg.src = coverSrc;
                 spotlightCoverImg.onload = () => { spotlightCoverImg.style.opacity = '1'; };
@@ -5463,8 +5495,8 @@
 
     function triggerRescan() {
         audio.playFocus();
-        const rescanBtn = document.getElementById('btnRescanLibrary');
-        if (rescanBtn) rescanBtn.textContent = '🔄 Scanning...';
+        const rescanLabel = document.querySelector('#btnRescanLibrary .rescan-label');
+        if (rescanLabel) rescanLabel.textContent = 'SCANNING...';
         fetch('/api/rescan?t=' + Date.now())
             .then(res => res.json())
             .then(data => {
@@ -5477,7 +5509,7 @@
             })
             .catch(() => fetchServerGames(true))
             .finally(() => {
-                if (rescanBtn) rescanBtn.textContent = '🔄 RESCAN';
+                if (rescanLabel) rescanLabel.textContent = 'RESCAN';
             });
     }
 
