@@ -4862,15 +4862,22 @@
         if (!g) return false;
         if (g.multiplayer) return true;
         const isGb = g.gb || g.console === 'gb' || g.console === 'gbc';
-        if (isGb) return false;
+        if (isGb || isPs1(g)) return false;
         const gid = (g.id || '').toLowerCase();
         return MULTIPLAYER_KEYWORDS.some(k => gid.includes(k));
     }
 
     const VALID_ROM_PATH_RE = /^roms\/[A-Za-z0-9 _()\[\].!,'-]+\.(?:nes|gb|gbc)$/i;
 
+    const PS1_ROM_PATH_RE = /^roms\/ps1\/[A-Za-z0-9 _()\[\].!,'&+-]+\.(?:chd|pbp|iso|bin|img|zip|7z)$/i;
+
+    function isPs1(g) {
+        return !!g && (g.ps1 || g.console === 'ps1');
+    }
+
     function isSafeRomPath(rom) {
-        return typeof rom === 'string' && !rom.includes('..') && !rom.includes('\\') && VALID_ROM_PATH_RE.test(rom.trim());
+        return typeof rom === 'string' && !rom.includes('..') && !rom.includes('\\') &&
+            (VALID_ROM_PATH_RE.test(rom.trim()) || PS1_ROM_PATH_RE.test(rom.trim()));
     }
 
     function createEl(tag, className, text) {
@@ -4898,6 +4905,7 @@
                 ((activeFilter === 'top100' || activeFilter === 'top50' || activeFilter === 'top20') && isHoF) ||
                 (activeFilter === 'gb' && isGb) ||
                 (activeFilter === 'nes' && isNes) ||
+                (activeFilter === 'ps1' && isPs1(g)) ||
                 (activeFilter === 'multiplayer' && isMp) ||
                 (g.system && g.system.toLowerCase() === activeFilter.toLowerCase());
             const matchSearch = !searchQuery ||
@@ -4908,6 +4916,7 @@
                 (searchQuery.includes('pokemon') && g.title.toLowerCase().includes('pok')) ||
                 (searchQuery.includes('gameboy') && isGb) ||
                 (searchQuery.includes('gb') && isGb) ||
+                ((searchQuery.includes('ps1') || searchQuery.includes('playstation') || searchQuery.includes('psx')) && isPs1(g)) ||
                 (searchQuery.includes('top') && isHoF) ||
                 (searchQuery.includes('review') && isHoF) ||
                 (searchQuery.includes('hall') && isHoF) ||
@@ -4920,6 +4929,8 @@
             filtered.sort((a, b) => (a.rank || 999) - (b.rank || 999));
         } else if (activeFilter === 'gb') {
             filtered.sort((a, b) => (b.review_score ? 1 : 0) - (a.review_score ? 1 : 0) || a.title.localeCompare(b.title));
+        } else if (activeFilter === 'ps1') {
+            filtered.sort((a, b) => (a.rank || 999) - (b.rank || 999) || a.title.localeCompare(b.title));
         }
 
         if (filtered.length === 0) {
@@ -4939,7 +4950,15 @@
             }
 
             const cardTop = createEl('div', 'card-top');
-            if ((g.top100 || g.top50 || g.top20 || g.hall_of_fame) && g.rank) {
+            if (isPs1(g)) {
+                if (!g.available) card.classList.add('card-no-disc');
+                cardTop.appendChild(createEl('span', 'badge-console-ps1', g.rank ? `💿 PS1 #${g.rank}` : '💿 PS1'));
+                if (!g.available) {
+                    cardTop.appendChild(createEl('span', 'badge-insert-disc', 'INSERT DISC'));
+                } else {
+                    cardTop.appendChild(createEl('span', 'card-system-tag', g.system));
+                }
+            } else if ((g.top100 || g.top50 || g.top20 || g.hall_of_fame) && g.rank) {
                 const rankEmoji = g.rank === 1 ? '👑' : g.rank === 2 ? '🏆' : g.rank === 3 ? '⭐' : `#${g.rank}`;
                 cardTop.appendChild(createEl('span', 'card-rank-badge', `${rankEmoji} Rank ${g.rank}`));
                 cardTop.appendChild(createEl('span', 'card-review-badge', g.review_score || '★ 9.5+'));
@@ -5014,6 +5033,7 @@
             else if (f === 'top100' || f === 'top50' || f === 'top20') count = allGames.filter(g => g.top100 || g.top50 || g.top20 || g.hall_of_fame).length;
             else if (f === 'gb') count = allGames.filter(g => g.gb || g.console === 'gb' || g.console === 'gbc').length;
             else if (f === 'nes') count = allGames.filter(g => g.nes || g.console === 'nes').length;
+            else if (f === 'ps1') count = allGames.filter(g => isPs1(g)).length;
             else if (f === 'multiplayer') count = allGames.filter(g => isMultiplayerGame(g)).length;
             else count = allGames.filter(g => g.system && g.system.toLowerCase() === f.toLowerCase()).length;
             
@@ -5069,13 +5089,31 @@
         if (!game) return;
         if (heroTitle) heroTitle.textContent = game.title;
         if (heroDesc) typewriterEffect(heroDesc, game.desc, 10, instantDesc);
-        if (heroSystem) heroSystem.textContent = `${game.system} • 60 FPS`;
+        if (heroSystem) {
+            heroSystem.textContent = isPs1(game)
+                ? `${game.system} • PlayStation${game.available ? '' : ' • Disc not added'}`
+                : `${game.system} • 60 FPS`;
+        }
         if (heroAmbient && game.gradient) heroAmbient.style.background = game.gradient;
-        
+
         const heroBadge = document.getElementById('spotlightBadge');
         const reviewBox = document.getElementById('spotlightReviewBox');
 
-        if ((game.top100 || game.top50 || game.top20 || game.hall_of_fame) && game.rank) {
+        if (isPs1(game) && game.rank) {
+            if (heroBadge) {
+                heroBadge.className = 'spotlight-pill hall-of-fame';
+                heroBadge.textContent = `💿 PS1 HALL OF FAME #${game.rank}`;
+                heroBadge.style = '';
+            }
+            if (reviewBox) {
+                reviewBox.style.display = 'flex';
+                reviewBox.textContent = '';
+                reviewBox.appendChild(createEl('span', 'spotlight-review-score', game.available ? '▶ READY TO PLAY' : '💿 INSERT DISC'));
+                reviewBox.appendChild(createEl('span', 'spotlight-review-quote', game.available
+                    ? `"${game.review_quote || game.desc}"`
+                    : `Add your disc image to roms/ps1/ — e.g. ${(game.disc_hint || '').replace(/^roms\/ps1\//, '')}`));
+            }
+        } else if ((game.top100 || game.top50 || game.top20 || game.hall_of_fame) && game.rank) {
             if (heroBadge) {
                 heroBadge.className = 'spotlight-pill hall-of-fame';
                 heroBadge.textContent = `👑 HALL OF FAME #${game.rank}`;
@@ -5118,13 +5156,24 @@
     // 9. Launch Game in Cinema Viewport (Mobile + Desktop Fullscreen)
     // ========================================================
     function launchGame(game) {
-        if (!game || !isSafeRomPath(game.rom)) return;
+        if (!game) return;
+        const ps1 = isPs1(game);
+        // PS1 Hall of Fame titles without a disc still open the player, which explains how to add one.
+        const ps1Missing = ps1 && !game.available;
+        if (!ps1Missing && !isSafeRomPath(game.rom)) return;
         audio.playLaunch();
 
-        if (cinemaTitle) cinemaTitle.textContent = `${game.title} [${game.system}]`;
+        if (cinemaTitle) cinemaTitle.textContent = `${game.title} [${ps1 ? 'PS1' : game.system}]`;
 
         if (cinemaFrame) {
-            cinemaFrame.src = `player.html?rom=${encodeURIComponent(game.rom)}&title=${encodeURIComponent(game.title)}`;
+            const titleParam = `title=${encodeURIComponent(game.title)}`;
+            if (ps1Missing) {
+                cinemaFrame.src = `ps1.html?${titleParam}&hint=${encodeURIComponent(game.disc_hint || '')}`;
+            } else if (ps1) {
+                cinemaFrame.src = `ps1.html?rom=${encodeURIComponent(game.rom)}&${titleParam}`;
+            } else {
+                cinemaFrame.src = `player.html?rom=${encodeURIComponent(game.rom)}&${titleParam}`;
+            }
         }
 
         if (cinemaModal) {
