@@ -30,7 +30,8 @@ jobs:
 
       - name: Validate Python & JavaScript Syntax
         run: |
-          python3 -m py_compile server.py
+          python3 -m py_compile server.py ps1_catalog.py scripts/fetch_ps1_covers.py
+          node -c js/ps1.js
           node -c js/nexus.js
           node -c js/player.js
           node -c js/controller.js
