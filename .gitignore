@@ -1,0 +1,22 @@
+# Python & OS caches
+__pycache__/
+*.py[cod]
+*.bak
+.DS_Store
+
+# Runtime state, PIDs & logs
+*.log
+*.log.*
+*.pid
+public_url.txt
+security.log*
+
+# Local test & verification artifacts
+screenshot*.png
+test_*.png
+temp_test*.html
+*.pyc
+
+# Note: To push Code Only without ROM/box-art binaries, uncomment below:
+# roms/
+# covers/

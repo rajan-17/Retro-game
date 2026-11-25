@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Nexus Retro Wireless Controller</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-base: #0a0a12;
+            --bg-shell: #171728;
+            --border-arcade: #333355;
+            --accent-cyan: #00f0ff;
+            --accent-magenta: #ff0055;
+            --accent-yellow: #ffe600;
+            --accent-green: #33ff33;
+            --font-pixel: 'Press Start 2P', monospace;
+            --font-retro: 'VT323', monospace;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: var(--bg-base);
+            color: #ffffff;
+            font-family: var(--font-pixel);
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: none;
+            display: flex;
+            flex-direction: column;
+        }
+        .scanlines {
+            position: fixed;
+            inset: 0;
+            background: repeating-linear-gradient(0deg, rgba(0,0,0,0.14) 0px, rgba(0,0,0,0.14) 1px, transparent 1px, transparent 3px);
+            pointer-events: none;
+            z-index: 999;
+            opacity: 0.4;
+        }
+        .ctrl-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 14px;
+            background: linear-gradient(180deg, #15152a, #0a0a12);
+            border-bottom: 3px solid var(--accent-cyan);
+            gap: 8px;
+            flex-wrap: wrap;
+            z-index: 10;
+        }
+        .ctrl-status-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .ctrl-pill {
+            font-size: 8px;
+            padding: 5px 9px;
+            border-radius: 4px;
+            background: #1a1a2e;
+            border: 2px solid var(--border-arcade);
+            color: var(--accent-cyan);
+            box-shadow: 2px 2px 0 #000;
+        }
+        .ctrl-pill.live {
+            border-color: var(--accent-green);
+            color: var(--accent-green);
+        }
+        .ctrl-pill.err {
+            border-color: var(--accent-magenta);
+            color: var(--accent-magenta);
+        }
+        .ctrl-btn-sm {
+            font-family: var(--font-pixel);
+            font-size: 8px;
+            padding: 6px 10px;
+            background: #1a1a2e;
+            color: #fff;
+            border: 2px solid var(--accent-yellow);
+            border-radius: 4px;
+            box-shadow: 2px 2px 0 #000;
+            cursor: pointer;
+        }
+        .ctrl-btn-sm:active {
+            transform: translate(2px, 2px);
+            box-shadow: none;
+        }
+
+        /* Room Entry Overlay */
+        .room-gate {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            z-index: 20;
+        }
+        .room-card {
+            width: 100%;
+            max-width: 400px;
+            background: #121222;
+            border: 3px solid var(--accent-cyan);
+            border-radius: 6px;
+            padding: 24px;
+            box-shadow: 6px 6px 0 #000, 0 0 25px rgba(0,240,255,0.25);
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+        .room-card h1 {
+            font-size: 13px;
+            color: var(--accent-yellow);
+            text-shadow: 2px 2px 0 #000;
+            line-height: 1.5;
+        }
+        .room-card p {
+            font-family: var(--font-retro);
+            font-size: 20px;
+            color: #b0b0c8;
+        }
+        .room-input {
+            font-family: var(--font-pixel);
+            font-size: 22px;
+            letter-spacing: 8px;
+            text-align: center;
+            text-transform: uppercase;
+            padding: 12px;
+            background: #080810;
+            border: 3px solid var(--border-arcade);
+            border-radius: 4px;
+            color: var(--accent-green);
+            outline: none;
+        }
+        .room-input:focus {
+            border-color: var(--accent-cyan);
+        }
+        .room-connect-btn {
+            font-family: var(--font-pixel);
+            font-size: 11px;
+            padding: 14px;
+            background: var(--accent-magenta);
+            color: #fff;
+            border: 3px solid #000;
+            border-radius: 4px;
+            box-shadow: 4px 4px 0 #000;
+            cursor: pointer;
+        }
+        .room-connect-btn:active {
+            transform: translate(3px, 3px);
+            box-shadow: none;
+        }
+
+        /* Gamepad Deck */
+        .gamepad-deck {
+            flex: 1;
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 22px env(safe-area-inset-bottom) 22px;
+            background: radial-gradient(circle at 50% 50%, #1c1c34 0%, #0a0a12 90%);
+            gap: 12px;
+        }
+        .gamepad-deck.active {
+            display: flex;
+        }
+
+        /* D-Pad */
+        .dpad-shell {
+            display: grid;
+            grid-template-columns: repeat(3, 62px);
+            grid-template-rows: repeat(3, 62px);
+            gap: 4px;
+            background: #0e0e1a;
+            padding: 10px;
+            border: 3px solid var(--border-arcade);
+            border-radius: 10px;
+            box-shadow: 5px 5px 0 #000;
+        }
+        .pad-key {
+            background: #23233d;
+            border: 2px solid #44446e;
+            border-radius: 6px;
+            color: #e0e0f0;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 3px 3px 0 #000;
+            transition: background 0.05s, transform 0.05s;
+        }
+        .pad-key.pressed {
+            background: var(--accent-cyan);
+            color: #000;
+            border-color: #fff;
+            transform: translate(2px, 2px);
+            box-shadow: none;
+        }
+        .dpad-core {
+            background: #171728;
+            border-radius: 4px;
+            border: 2px solid #2b2b48;
+        }
+
+        /* Center Select / Start */
+        .center-shell {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 14px;
+        }
+        .game-banner {
+            font-family: var(--font-retro);
+            font-size: 18px;
+            color: var(--accent-yellow);
+            text-align: center;
+            max-width: 180px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .sys-btn-row {
+            display: flex;
+            gap: 12px;
+        }
+        .sys-btn {
+            font-family: var(--font-pixel);
+            font-size: 8px;
+            padding: 12px 14px;
+            background: #23233d;
+            color: #cbd5e1;
+            border: 2px solid #44446e;
+            border-radius: 4px;
+            box-shadow: 3px 3px 0 #000;
+        }
+        .sys-btn.pressed {
+            background: var(--accent-yellow);
+            color: #000;
+            transform: translate(2px, 2px);
+            box-shadow: none;
+        }
+
+        /* A / B Action Cluster */
+        .ab-shell {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            background: #0e0e1a;
+            padding: 16px 18px;
+            border: 3px solid var(--border-arcade);
+            border-radius: 10px;
+            box-shadow: 5px 5px 0 #000;
+        }
+        .ab-btn {
+            width: 78px;
+            height: 78px;
+            border-radius: 50%;
+            font-family: var(--font-pixel);
+            font-size: 20px;
+            color: #fff;
+            border: 3px solid #000;
+            box-shadow: 4px 4px 0 #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .ab-b {
+            background: #d62246;
+            border-color: var(--accent-magenta);
+            margin-top: 18px;
+        }
+        .ab-a {
+            background: #0070d1;
+            border-color: var(--accent-cyan);
+            margin-bottom: 18px;
+        }
+        .ab-btn.pressed {
+            transform: translate(3px, 3px);
+            box-shadow: none;
+            filter: brightness(1.35);
+        }
+
+        @media (max-height: 450px) {
+            .room-gate {
+                padding: 8px 16px;
+            }
+            .room-card {
+                padding: 14px 18px;
+                gap: 8px;
+            }
+            .room-card h1 {
+                font-size: 11px;
+            }
+            .room-card p {
+                font-size: 16px;
+            }
+            .room-input {
+                font-size: 18px;
+                padding: 8px;
+            }
+            .room-connect-btn {
+                padding: 10px;
+                font-size: 10px;
+            }
+        }
+
+        @media (max-width: 600px) and (orientation: portrait) {
+            .gamepad-deck.active {
+                flex-direction: column;
+                justify-content: space-evenly;
+                padding: 16px 12px;
+            }
+            .dpad-shell {
+                grid-template-columns: repeat(3, 56px);
+                grid-template-rows: repeat(3, 56px);
+            }
+            .ab-btn {
+                width: 72px;
+                height: 72px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="scanlines"></div>
+
+    <header class="ctrl-header">
+        <div class="ctrl-status-group">
+            <span id="ctrlRoomBadge" class="ctrl-pill">ROOM: ----</span>
+            <span id="ctrlStatusBadge" class="ctrl-pill">OFFLINE</span>
+            <span id="ctrlPingBadge" class="ctrl-pill">PING: --</span>
+        </div>
+        <div class="ctrl-status-group">
+            <button id="btnPlayerToggle" class="ctrl-btn-sm">PLAYER: P2</button>
+            <button id="btnFullscreen" class="ctrl-btn-sm">⛶ FULL</button>
+        </div>
+    </header>
+
+    <!-- Room Code Entry -->
+    <div id="roomGate" class="room-gate">
+        <div class="room-card">
+            <h1>📱 WIRELESS ARCADE PAD</h1>
+            <p>Enter the 6-character Room Code shown on Player 1's screen:</p>
+            <input id="roomCodeInput" class="room-input" type="text" maxlength="6" placeholder="A7K9P2" autocomplete="off">
+            <div id="roomErrMsg" style="font-family: var(--font-retro); font-size: 18px; color: var(--accent-magenta); min-height: 22px;"></div>
+            <button id="btnConnectRoom" class="room-connect-btn">CONNECT CONTROLLER</button>
+            <a href="index.html" style="font-size: 8px; color: var(--accent-cyan); text-decoration: none; margin-top: 4px;">← BACK TO ARCADE HUB</a>
+        </div>
+    </div>
+
+    <!-- Tactile Wireless Gamepad -->
+    <main id="gamepadDeck" class="gamepad-deck">
+        <!-- Left D-Pad -->
+        <div class="dpad-shell">
+            <div></div>
+            <div class="pad-key" data-btn="4">▲</div>
+            <div></div>
+            <div class="pad-key" data-btn="6">◄</div>
+            <div class="dpad-core"></div>
+            <div class="pad-key" data-btn="7">►</div>
+            <div></div>
+            <div class="pad-key" data-btn="5">▼</div>
+            <div></div>
+        </div>
+
+        <!-- Center Select & Start -->
+        <div class="center-shell">
+            <div id="ctrlGameTitle" class="game-banner">READY PLAYER 2</div>
+            <div class="sys-btn-row">
+                <div class="sys-btn" data-btn="2">SELECT</div>
+                <div class="sys-btn" data-btn="3">START</div>
+            </div>
+        </div>
+
+        <!-- Right B & A -->
+        <div class="ab-shell">
+            <div class="ab-btn ab-b" data-btn="1">B</div>
+            <div class="ab-btn ab-a" data-btn="0">A</div>
+        </div>
+    </main>
+
+    <script src="js/netplay.js"></script>
+    <script src="js/controller.js"></script>
+</body>
+</html>

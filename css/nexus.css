@@ -1,0 +1,1354 @@
+/* ========================================================
+   NEXUS RETRO ARCADE — AUTHENTIC 80s ARCADE CABINET UI
+   Pixel Fonts, CRT Scanlines, Hard Shadows, Neon Glow
+   Publishing-Ready World-Class Retro Aesthetic
+   ======================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap');
+
+:root {
+    --bg-base: #0a0a12;
+    --bg-surface: #12121e;
+    --bg-card: #1a1a2e;
+    --bg-card-hover: #222240;
+    --border-arcade: #333355;
+    --border-focus: #00f0ff;
+    --accent-cyan: #00f0ff;
+    --accent-magenta: #ff0055;
+    --accent-violet: #8b5cf6;
+    --accent-emerald: #33ff33;
+    --accent-yellow: #ffe600;
+    --accent-gold: #fbbf24;
+    --accent-coral: #ff5376;
+    --text-primary: #e0e0e0;
+    --text-secondary: #9999bb;
+    --text-muted: #666680;
+    --glow-cyan: 0 0 10px rgba(0, 240, 255, 0.4), 0 0 25px rgba(0, 240, 255, 0.2);
+    --glow-magenta: 0 0 10px rgba(255, 0, 85, 0.4), 0 0 25px rgba(255, 0, 85, 0.2);
+    --shadow-hard: 4px 4px 0px #000000;
+    --shadow-hard-sm: 2px 2px 0px #000000;
+    --shadow-hard-lg: 6px 6px 0px #000000;
+    --radius-sm: 4px;
+    --radius-md: 6px;
+    --font-pixel: 'Press Start 2P', monospace;
+    --font-retro: 'VT323', monospace;
+    --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
+}
+
+::selection {
+    background: var(--accent-cyan);
+    color: #000;
+}
+
+body {
+    background-color: var(--bg-base);
+    color: var(--text-primary);
+    font-family: var(--font-retro);
+    font-size: 18px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+/* ========================================================
+   CRT MONITOR FRAME — FULL PAGE OVERLAY
+   ======================================================== */
+.crt-frame {
+    position: relative;
+    min-height: 100vh;
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.crt-scanlines {
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+        0deg,
+        rgba(0, 0, 0, 0.12) 0px,
+        rgba(0, 0, 0, 0.12) 1px,
+        transparent 1px,
+        transparent 3px
+    );
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.45;
+}
+
+.crt-vignette {
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.65) 100%);
+    pointer-events: none;
+    z-index: 9998;
+}
+
+/* ========================================================
+   1. ARCADE MARQUEE HEADER (GPU-Friendly Static Neon Border)
+   ======================================================== */
+.nexus-nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: linear-gradient(180deg, #15152a, #0a0a12);
+    border-bottom: 4px solid;
+    border-image: linear-gradient(90deg, #ff0055, #ffe600, #00f0ff, #33ff33, #8b5cf6, #ff0055) 1;
+    padding: 14px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.nexus-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+}
+
+.nexus-logo-icon {
+    width: 36px;
+    height: 36px;
+    background: var(--accent-magenta);
+    border: 3px solid #000;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-hard-sm);
+    font-size: 16px;
+    color: #fff;
+}
+
+.nexus-brand-title {
+    font-family: var(--font-pixel);
+    font-size: 13px;
+    color: #ffffff;
+    text-shadow: 0 0 8px var(--accent-cyan), 0 0 20px rgba(0,240,255,0.3), 2px 2px 0px #000;
+    letter-spacing: 2px;
+}
+
+.nexus-nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Search Trigger */
+.nexus-search-trigger {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--bg-card);
+    border: 2px solid var(--border-arcade);
+    border-radius: var(--radius-sm);
+    padding: 7px 14px;
+    font-family: var(--font-retro);
+    font-size: 16px;
+    color: var(--text-muted);
+    cursor: pointer;
+    box-shadow: var(--shadow-hard-sm);
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.nexus-search-trigger:hover {
+    border-color: var(--accent-cyan);
+    color: var(--text-secondary);
+    box-shadow: var(--shadow-hard-sm), 0 0 8px rgba(0,240,255,0.25);
+}
+
+.kbd-shortcut {
+    font-family: var(--font-pixel);
+    font-size: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 3px 6px;
+    border-radius: 3px;
+    border: 1px solid var(--border-arcade);
+    color: var(--text-secondary);
+}
+
+.nexus-telemetry-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-pixel);
+    font-size: 9px;
+    color: var(--accent-emerald);
+    background: rgba(51, 255, 51, 0.08);
+    border: 2px solid rgba(51, 255, 51, 0.35);
+    border-radius: var(--radius-sm);
+    padding: 6px 12px;
+    box-shadow: var(--shadow-hard-sm);
+    text-shadow: 0 0 6px rgba(51,255,51,0.5);
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent-emerald);
+    box-shadow: 0 0 8px var(--accent-emerald), 0 0 16px rgba(51,255,51,0.4);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.7); }
+}
+
+/* ========================================================
+   2. APP CONTAINER & VIEWS
+   ======================================================== */
+.nexus-container {
+    max-width: 1440px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 18px 20px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.nexus-view {
+    display: none;
+    flex-direction: column;
+    gap: 16px;
+    animation: fadeIn 0.25s ease-out;
+    min-width: 0;
+    width: 100%;
+}
+
+.nexus-view.active {
+    display: flex;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ========================================================
+   3. BENTO HERO SECTION (ARCADE CABINET SCREEN)
+   ======================================================== */
+.nexus-bento-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    gap: 16px;
+    width: 100%;
+}
+
+/* Spotlight Hero — Arcade Screen */
+.bento-hero-spotlight {
+    background: #0f0f1a;
+    border: 3px solid var(--border-arcade);
+    border-radius: var(--radius-md);
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    min-height: 270px;
+    min-width: 0;
+    box-shadow: var(--shadow-hard-lg), inset 0 0 80px rgba(0, 240, 255, 0.03);
+    transition: border-color 0.3s ease;
+}
+
+.bento-hero-spotlight:hover {
+    border-color: var(--accent-cyan);
+    box-shadow: var(--shadow-hard-lg), 0 0 20px rgba(0,240,255,0.2), inset 0 0 60px rgba(0,240,255,0.05);
+}
+
+.spotlight-bg-ambient {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.3;
+    background: radial-gradient(circle at 80% 20%, #4a0e17 0%, transparent 70%);
+    transition: background 0.6s ease;
+}
+
+.spotlight-content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 10px;
+    flex: 1;
+    min-width: 0;
+}
+
+/* Cover 3D Frame */
+.spotlight-cover-frame {
+    position: relative;
+    z-index: 2;
+    width: 170px;
+    height: 230px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    perspective: 800px;
+}
+
+.spotlight-cover-img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    border-radius: 4px;
+    border: 3px solid #000;
+    box-shadow: var(--shadow-hard), 0 0 20px rgba(0, 240, 255, 0.2);
+    image-rendering: auto;
+    transform: rotateY(-6deg) rotateX(3deg);
+    transition: transform 0.3s ease, box-shadow 0.3s ease, opacity 0.2s ease;
+}
+
+.bento-hero-spotlight:hover .spotlight-cover-img {
+    transform: rotateY(0deg) rotateX(0deg) scale(1.03);
+    box-shadow: var(--shadow-hard-lg), 0 0 30px rgba(0, 240, 255, 0.4);
+}
+
+/* Spotlight Tags & Pills */
+.spotlight-tags {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.spotlight-pill {
+    font-family: var(--font-pixel);
+    font-size: 8px;
+    font-weight: 400;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    padding: 5px 10px;
+    border-radius: var(--radius-sm);
+    background: rgba(0, 240, 255, 0.12);
+    color: var(--accent-cyan);
+    border: 2px solid rgba(0, 240, 255, 0.35);
+    box-shadow: var(--shadow-hard-sm);
+    text-shadow: 0 0 6px rgba(0,240,255,0.4);
+}
+
+.spotlight-pill.hall-of-fame {
+    background: rgba(255, 230, 0, 0.12);
+    color: var(--accent-yellow);
+    border-color: rgba(255, 230, 0, 0.5);
+    box-shadow: var(--shadow-hard-sm), 0 0 10px rgba(255,230,0,0.25);
+    text-shadow: 0 0 8px rgba(255,230,0,0.5);
+}
+
+/* Review Quote Box */
+.spotlight-review-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    margin: 2px 0;
+    padding: 8px 12px;
+    background: rgba(255, 230, 0, 0.06);
+    border-left: 4px solid var(--accent-yellow);
+    border-radius: 0 4px 4px 0;
+    max-width: 100%;
+}
+
+.spotlight-review-score {
+    font-family: var(--font-pixel);
+    font-size: 9px;
+    color: var(--accent-yellow);
+    white-space: nowrap;
+    text-shadow: 0 0 8px rgba(255,230,0,0.5);
+}
+
+.spotlight-review-quote {
+    font-family: var(--font-retro);
+    font-size: 18px;
+    color: #d0d0e0;
+    font-style: italic;
+    line-height: 1.3;
+}
+
+/* Spotlight Title */
+.spotlight-title {
+    font-family: var(--font-pixel);
+    font-size: 20px;
+    color: #ffffff;
+    line-height: 1.35;
+    text-shadow: 0 0 12px rgba(255,255,255,0.2), 3px 3px 0px #000;
+}
+
+.spotlight-desc {
+    font-family: var(--font-retro);
+    font-size: 19px;
+    color: var(--text-secondary);
+    max-width: 580px;
+    line-height: 1.35;
+}
+
+/* Spotlight Buttons */
+.spotlight-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 6px;
+}
+
+.nexus-btn-primary {
+    font-family: var(--font-pixel);
+    font-size: 10px;
+    background: var(--accent-magenta);
+    color: #ffffff;
+    border: 3px solid #000;
+    border-radius: var(--radius-sm);
+    padding: 13px 20px;
+    box-shadow: var(--shadow-hard);
+    text-transform: uppercase;
+    text-shadow: 1px 1px 0 rgba(0,0,0,0.5);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    white-space: nowrap;
+    transition: transform 0.08s, box-shadow 0.08s, background 0.15s;
+    letter-spacing: 1px;
+}
+
+.nexus-btn-primary:hover {
+    background: #ff3377;
+    box-shadow: var(--shadow-hard), 0 0 15px rgba(255,0,85,0.4);
+}
+
+.nexus-btn-primary:active {
+    transform: translate(4px, 4px);
+    box-shadow: 0px 0px 0px #000;
+}
+
+.nexus-btn-secondary {
+    font-family: var(--font-pixel);
+    font-size: 9px;
+    background: var(--bg-card);
+    color: var(--accent-cyan);
+    border: 2px solid var(--accent-cyan);
+    border-radius: var(--radius-sm);
+    padding: 12px 16px;
+    box-shadow: var(--shadow-hard-sm);
+    text-transform: uppercase;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    white-space: nowrap;
+    transition: transform 0.08s, box-shadow 0.08s, background 0.15s;
+    letter-spacing: 1px;
+}
+
+.nexus-btn-secondary:hover {
+    background: rgba(0, 240, 255, 0.1);
+    box-shadow: var(--shadow-hard-sm), 0 0 10px rgba(0,240,255,0.3);
+}
+
+.nexus-btn-secondary:active {
+    transform: translate(2px, 2px);
+    box-shadow: 0 0 0 #000;
+    background: var(--accent-cyan);
+    color: #000;
+}
+
+/* ========================================================
+   BENTO SIDE COLUMN (ATTRACT MODE PANELS)
+   ======================================================== */
+.bento-hero-side {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
+}
+
+/* Attract Mode / INSERT COIN panel */
+.arcade-attract-panel {
+    background: #0f0f1a;
+    border: 3px solid var(--border-arcade);
+    border-radius: var(--radius-md);
+    padding: 14px;
+    box-shadow: var(--shadow-hard);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 0;
+}
+
+.attract-coin-slot {
+    text-align: center;
+    padding: 8px;
+    background: rgba(255, 230, 0, 0.04);
+    border: 2px solid rgba(255, 230, 0, 0.25);
+    border-radius: var(--radius-sm);
+}
+
+.coin-text {
+    font-family: var(--font-pixel);
+    font-size: 12px;
+    color: var(--accent-yellow);
+    text-shadow: 0 0 10px var(--accent-yellow), 0 0 25px rgba(255,230,0,0.3);
+    letter-spacing: 2px;
+}
+
+.coin-counter {
+    font-family: var(--font-pixel);
+    font-size: 8px;
+    color: var(--accent-emerald);
+    margin-top: 6px;
+    text-shadow: 0 0 6px rgba(51,255,51,0.4);
+    letter-spacing: 1px;
+}
+
+.blink {
+    animation: blink-anim 1.2s ease-in-out infinite;
+}
+
+@keyframes blink-anim {
+    0%, 45% { opacity: 1; }
+    50%, 95% { opacity: 0.35; }
+    100% { opacity: 1; }
+}
+
+.attract-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 8px;
+    background: rgba(255,255,255,0.02);
+    border-radius: 3px;
+}
+
+.stat-label {
+    font-family: var(--font-pixel);
+    font-size: 7px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.stat-value {
+    font-family: var(--font-pixel);
+    font-size: 9px;
+    color: var(--accent-cyan);
+    text-shadow: 0 0 6px rgba(0,240,255,0.4);
+}
+
+/* High Score Board Panel */
+.arcade-high-score-board {
+    background: linear-gradient(135deg, rgba(255, 230, 0, 0.06), rgba(255, 0, 85, 0.04));
+    border: 3px solid rgba(255, 230, 0, 0.35);
+    border-radius: var(--radius-md);
+    padding: 12px 14px;
+    box-shadow: var(--shadow-hard);
+    cursor: pointer;
+    transition: transform 0.1s, border-color 0.2s;
+    overflow: hidden;
+    min-width: 0;
+}
+
+.arcade-high-score-board:hover {
+    transform: translateY(-2px);
+    border-color: var(--accent-yellow);
+    box-shadow: var(--shadow-hard), 0 0 15px rgba(255,230,0,0.3);
+}
+
+.hsb-title {
+    font-family: var(--font-pixel);
+    font-size: 9px;
+    color: var(--accent-yellow);
+    text-align: center;
+    text-shadow: 0 0 8px rgba(255,230,0,0.5), 2px 2px 0 #000;
+    letter-spacing: 1.5px;
+    margin-bottom: 8px;
+}
+
+.hsb-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 8px;
+}
+
+.hsb-row {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--font-pixel);
+    font-size: 7px;
+    color: #d0d0e8;
+    padding: 2px 4px;
+}
+
+.hsb-row.top1 { color: var(--accent-yellow); }
+.hsb-row.top2 { color: var(--accent-cyan); }
+.hsb-row.top3 { color: var(--accent-magenta); }
+
+.hsb-marquee {
+    overflow: hidden;
+    white-space: nowrap;
+    border-top: 1px solid rgba(255, 230, 0, 0.2);
+    padding-top: 6px;
+}
+
+.hsb-scroll {
+    font-family: var(--font-pixel);
+    font-size: 7px;
+    color: var(--accent-emerald);
+    display: inline-block;
+    animation: hsb-scroll 18s linear infinite;
+    text-shadow: 0 0 6px rgba(51,255,51,0.4);
+}
+
+@keyframes hsb-scroll {
+    from { transform: translateX(100%); }
+    to { transform: translateX(-100%); }
+}
+
+/* Legacy telemetry card — hidden, replaced by attract panel */
+.bento-card-telemetry,
+.bento-card-multi-console {
+    display: none;
+}
+
+/* ========================================================
+   ARCADE TICKER (SCROLLING NEWS)
+   ======================================================== */
+.arcade-ticker {
+    overflow: hidden;
+    background: #0f0f1a;
+    border: 2px solid var(--border-arcade);
+    border-radius: var(--radius-sm);
+    padding: 8px 0;
+}
+
+.ticker-track {
+    font-family: var(--font-pixel);
+    font-size: 9px;
+    color: var(--accent-yellow);
+    white-space: nowrap;
+    display: inline-block;
+    animation: ticker-scroll 40s linear infinite;
+    text-shadow: 0 0 6px rgba(255,230,0,0.3);
+    letter-spacing: 1px;
+    padding-left: 100%;
+}
+
+@keyframes ticker-scroll {
+    from { transform: translateX(0); }
+    to { transform: translateX(-100%); }
+}
+
+/* ========================================================
+   4. GAME CATALOG — FILTER PILLS (ARCADE SELECT)
+   ======================================================== */
+.nexus-catalog-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 2px;
+    min-width: 0;
+    width: 100%;
+}
+
+.nexus-filter-group {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    max-width: 100%;
+    min-width: 0;
+    -webkit-overflow-scrolling: touch;
+}
+
+.nexus-filter-pill {
+    font-family: var(--font-pixel);
+    font-size: 8px;
+    background: var(--bg-card);
+    border: 2px solid var(--border-arcade);
+    color: var(--text-muted);
+    padding: 8px 12px;
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-hard-sm);
+    text-transform: uppercase;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.1s;
+    letter-spacing: 0.5px;
+}
+
+.nexus-filter-pill:hover {
+    color: #ffffff;
+    border-color: rgba(255,255,255,0.3);
+    background: var(--bg-card-hover);
+}
+
+.nexus-filter-pill.active {
+    background: var(--accent-cyan);
+    border-color: var(--accent-cyan);
+    color: #000;
+    box-shadow: var(--shadow-hard-sm), 0 0 12px rgba(0,240,255,0.5);
+    text-shadow: none;
+}
+
+.nexus-filter-pill[data-filter="top100"].active,
+.nexus-filter-pill[data-filter="top50"].active,
+.nexus-filter-pill[data-filter="top20"].active {
+    background: var(--accent-yellow);
+    border-color: var(--accent-yellow);
+    color: #000;
+    box-shadow: var(--shadow-hard-sm), 0 0 15px rgba(255,230,0,0.5);
+}
+
+.nexus-filter-pill[data-filter="gb"].active {
+    background: var(--accent-emerald);
+    border-color: var(--accent-emerald);
+    color: #000;
+    box-shadow: var(--shadow-hard-sm), 0 0 15px rgba(51,255,51,0.5);
+}
+
+.nexus-filter-pill[data-filter="nes"].active {
+    background: var(--accent-magenta);
+    border-color: var(--accent-magenta);
+    color: #fff;
+    box-shadow: var(--shadow-hard-sm), 0 0 15px rgba(255,0,85,0.5);
+}
+
+.nexus-filter-pill[data-filter="multiplayer"].active {
+    background: var(--accent-violet);
+    border-color: var(--accent-violet);
+    color: #fff;
+    box-shadow: var(--shadow-hard-sm), 0 0 15px rgba(139,92,246,0.5);
+}
+
+.badge-2p {
+    font-family: var(--font-pixel);
+    font-size: 7px;
+    background: rgba(139, 92, 246, 0.2);
+    border: 1px solid rgba(139, 92, 246, 0.5);
+    color: #c4b5fd;
+    padding: 3px 6px;
+    border-radius: var(--radius-sm);
+    text-transform: uppercase;
+}
+
+.join-room-input {
+    font-family: var(--font-pixel);
+    font-size: 24px;
+    letter-spacing: 8px;
+    text-align: center;
+    text-transform: uppercase;
+    padding: 12px;
+    background: #070710;
+    border: 3px solid var(--border-arcade);
+    border-radius: var(--radius-sm);
+    color: var(--accent-emerald);
+    outline: none;
+    width: 100%;
+}
+
+.join-room-input:focus {
+    border-color: var(--accent-cyan);
+    box-shadow: 0 0 12px rgba(0,240,255,0.25);
+}
+
+/* Console Badges */
+.badge-console-gb {
+    font-family: var(--font-pixel);
+    font-size: 7px;
+    background: rgba(51, 255, 51, 0.1);
+    border: 2px solid rgba(51, 255, 51, 0.4);
+    color: var(--accent-emerald);
+    padding: 3px 7px;
+    border-radius: var(--radius-sm);
+    text-transform: uppercase;
+    text-shadow: 0 0 4px rgba(51,255,51,0.4);
+}
+
+.badge-console-gbc {
+    font-family: var(--font-pixel);
+    font-size: 7px;
+    background: linear-gradient(135deg, rgba(51,255,51,0.15), rgba(0,240,255,0.15));
+    border: 2px solid rgba(51, 255, 51, 0.5);
+    color: #6ee7b7;
+    padding: 3px 7px;
+    border-radius: var(--radius-sm);
+    text-transform: uppercase;
+    text-shadow: 0 0 4px rgba(51,255,51,0.4);
+}
+
+/* ========================================================
+   5. BENTO GRID GAMES CATALOG
+   ======================================================== */
+.nexus-bento-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 14px;
+}
+
+/* Game Card — Arcade Cabinet Style */
+.nexus-game-card {
+    background: var(--bg-card);
+    border: 3px solid var(--border-arcade);
+    border-radius: var(--radius-sm);
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 260px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    box-shadow: var(--shadow-hard);
+    content-visibility: auto;
+    contain-intrinsic-size: 220px 260px;
+    transition: transform 0.1s, border-color 0.15s;
+}
+
+.nexus-game-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--accent-cyan);
+    box-shadow: var(--shadow-hard), 0 0 18px rgba(0, 240, 255, 0.35), inset 0 0 40px rgba(0, 240, 255, 0.04);
+}
+
+.nexus-game-card.spotlighted {
+    border-color: var(--accent-cyan);
+    box-shadow: var(--shadow-hard), 0 0 20px rgba(0, 240, 255, 0.4);
+}
+
+.card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.card-system-tag {
+    font-family: var(--font-pixel);
+    font-size: 7px;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: var(--radius-sm);
+    background: rgba(0, 240, 255, 0.08);
+    color: var(--accent-cyan);
+    border: 1px solid rgba(0, 240, 255, 0.25);
+    text-shadow: 0 0 4px rgba(0,240,255,0.3);
+}
+
+.card-rank-badge {
+    font-family: var(--font-pixel);
+    font-size: 7px;
+    padding: 3px 8px;
+    border-radius: var(--radius-sm);
+    background: var(--accent-yellow);
+    color: #000;
+    border: 2px solid #000;
+    box-shadow: var(--shadow-hard-sm);
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    text-transform: uppercase;
+}
+
+.card-review-badge {
+    font-family: var(--font-pixel);
+    font-size: 7px;
+    padding: 3px 7px;
+    border-radius: var(--radius-sm);
+    background: rgba(255, 230, 0, 0.1);
+    color: var(--accent-yellow);
+    border: 1px solid rgba(255, 230, 0, 0.3);
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    text-shadow: 0 0 6px rgba(255,230,0,0.4);
+    white-space: nowrap;
+}
+
+/* Card Cover */
+.card-cover-container {
+    width: 100%;
+    height: 130px;
+    margin: 8px 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.card-cover-img {
+    max-width: 100%;
+    max-height: 130px;
+    object-fit: contain;
+    border-radius: 3px;
+    border: 2px solid #000;
+    box-shadow: 3px 3px 0px rgba(0,0,0,0.6);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.nexus-game-card:hover .card-cover-img {
+    transform: scale(1.06) translateY(-2px);
+    box-shadow: 4px 4px 0px rgba(0,0,0,0.7), 0 0 12px rgba(0,240,255,0.25);
+}
+
+.card-cover-fallback {
+    font-size: 44px;
+    margin: 14px 0;
+    text-align: center;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.6));
+    transition: transform 0.15s ease;
+}
+
+.nexus-game-card:hover .card-cover-fallback {
+    transform: scale(1.1);
+}
+
+.card-icon {
+    font-size: 44px;
+    margin: 14px 0;
+    text-align: center;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.6));
+    transition: transform 0.15s ease;
+}
+
+.nexus-game-card:hover .card-icon {
+    transform: scale(1.1);
+}
+
+.card-footer {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.card-title {
+    font-family: var(--font-pixel);
+    font-size: 9px;
+    line-height: 1.5;
+    color: #ffffff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-shadow: 1px 1px 0 #000;
+}
+
+.card-sub {
+    font-family: var(--font-retro);
+    font-size: 15px;
+    color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ========================================================
+   6. COMMAND PALETTE (RETRO TERMINAL STYLE)
+   ======================================================== */
+.nexus-palette-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 1000;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 15vh;
+    animation: fadeIn 0.15s ease;
+}
+
+.nexus-palette-backdrop.open {
+    display: flex;
+}
+
+.nexus-palette-box {
+    width: 90%;
+    max-width: 600px;
+    background: #0f0f1a;
+    border: 3px solid var(--accent-cyan);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-hard-lg), 0 0 40px rgba(0,240,255,0.25);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.palette-input-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 18px;
+    border-bottom: 2px solid var(--border-arcade);
+    background: rgba(0,240,255,0.03);
+}
+
+.palette-input {
+    flex: 1;
+    background: none;
+    border: none;
+    outline: none;
+    color: var(--accent-emerald);
+    font-family: var(--font-retro);
+    font-size: 22px;
+    caret-color: var(--accent-emerald);
+}
+
+.palette-input::placeholder {
+    color: var(--text-muted);
+}
+
+.palette-results {
+    max-height: 340px;
+    overflow-y: auto;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.palette-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    border-left: 3px solid transparent;
+    transition: background 0.1s, border-color 0.1s;
+}
+
+.palette-item:hover, .palette-item.active {
+    background: rgba(0, 240, 255, 0.08);
+    border-left-color: var(--accent-cyan);
+}
+
+.palette-item-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.palette-item-thumb {
+    width: 28px;
+    height: 38px;
+    object-fit: contain;
+    border-radius: 3px;
+    border: 1px solid #000;
+    flex-shrink: 0;
+    box-shadow: 2px 2px 0px rgba(0,0,0,0.5);
+}
+
+.palette-item-icon {
+    font-size: 20px;
+}
+
+.palette-item-title {
+    font-family: var(--font-pixel);
+    font-size: 9px;
+    color: #ffffff;
+    text-shadow: 1px 1px 0 #000;
+}
+
+.palette-item-desc {
+    font-family: var(--font-retro);
+    font-size: 15px;
+    color: var(--text-muted);
+}
+
+/* ========================================================
+   7. CINEMA MODAL (RUNNING GAME)
+   ======================================================== */
+.nexus-cinema-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    background: #000000;
+    z-index: 2000;
+    flex-direction: column;
+    padding: 10px 14px env(safe-area-inset-bottom) 14px;
+    animation: fadeIn 0.15s ease;
+}
+
+.nexus-cinema-modal.open {
+    display: flex;
+}
+
+.nexus-cinema-modal.is-fullscreen {
+    padding: 0;
+}
+
+.nexus-cinema-modal.is-fullscreen .nexus-cinema-bar {
+    display: none;
+}
+
+.nexus-cinema-modal.is-fullscreen .nexus-cinema-viewport {
+    max-width: none;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.cinema-exit-float {
+    display: none;
+    position: fixed;
+    top: max(10px, env(safe-area-inset-top));
+    right: max(10px, env(safe-area-inset-right));
+    z-index: 2100;
+    background: rgba(10, 10, 18, 0.85);
+    color: var(--accent-yellow);
+    border: 2px solid var(--accent-yellow);
+    border-radius: 4px;
+    padding: 6px 10px;
+    font-family: var(--font-pixel);
+    font-size: 8px;
+    cursor: pointer;
+    box-shadow: 2px 2px 0 #000;
+}
+
+.nexus-cinema-modal.is-fullscreen .cinema-exit-float {
+    display: inline-block;
+}
+
+.nexus-cinema-viewport {
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto;
+    background: #000000;
+    border: 4px solid var(--accent-cyan);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    box-shadow: var(--shadow-hard-lg), 0 0 40px rgba(0, 240, 255, 0.3);
+}
+
+.nexus-cinema-viewport iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: block;
+}
+
+/* ========================================================
+   8. RESPONSIVE DESIGN — MOBILE BREAKPOINTS
+   ======================================================== */
+@media (max-width: 900px) {
+    .nexus-bento-hero {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .nexus-nav {
+        padding: 10px 10px;
+        gap: 6px;
+    }
+    .nexus-brand {
+        gap: 8px;
+        min-width: 0;
+    }
+    .nexus-logo-icon {
+        width: 28px;
+        height: 28px;
+        font-size: 13px;
+        flex-shrink: 0;
+    }
+    .nexus-brand-title {
+        font-size: 8px;
+        letter-spacing: 0.5px;
+    }
+    .nexus-nav-actions {
+        gap: 6px;
+        flex-shrink: 0;
+    }
+    .nexus-nav-actions button {
+        padding: 5px 7px !important;
+        font-size: 7px !important;
+    }
+    .nexus-container {
+        padding: 12px;
+    }
+    .bento-hero-spotlight {
+        padding: 16px;
+        min-height: 220px;
+        flex-direction: column-reverse;
+        align-items: center;
+        text-align: center;
+        gap: 14px;
+    }
+    .spotlight-content {
+        align-items: center;
+        width: 100%;
+    }
+    .spotlight-review-container {
+        align-items: center;
+        text-align: center;
+        border-left: none;
+        border-top: 3px solid var(--accent-yellow);
+        border-radius: 4px;
+        width: 100%;
+    }
+    .spotlight-tags {
+        justify-content: center;
+    }
+    .spotlight-actions {
+        justify-content: center;
+        width: 100%;
+    }
+    .spotlight-cover-frame {
+        width: 130px;
+        height: 170px;
+    }
+    .spotlight-cover-img {
+        transform: none;
+    }
+    .spotlight-title {
+        font-size: 14px;
+    }
+    .spotlight-desc {
+        font-size: 16px;
+    }
+    .nexus-search-trigger {
+        padding: 5px 7px;
+        font-size: 12px;
+        gap: 0;
+        flex-shrink: 0;
+    }
+    .nexus-search-trigger span:first-child {
+        font-size: 12px;
+        display: inline-block;
+        width: 16px;
+        overflow: hidden;
+        white-space: nowrap;
+    }
+    .nexus-search-trigger .kbd-shortcut {
+        display: none;
+    }
+    .nexus-cinema-modal {
+        padding: 6px;
+    }
+    .nexus-cinema-bar {
+        padding: 6px 8px;
+        margin-bottom: 6px;
+        gap: 6px;
+    }
+    .cinema-title-badge {
+        font-size: 8px;
+        gap: 6px;
+        min-width: 0;
+    }
+    #cinemaGameTitle {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 130px;
+    }
+    .nexus-telemetry-badge {
+        display: none;
+    }
+    .arcade-ticker {
+        display: none;
+    }
+    .crt-scanlines {
+        opacity: 0.2;
+    }
+    .nexus-bento-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 10px;
+    }
+    .nexus-game-card {
+        min-height: 220px;
+        padding: 10px;
+    }
+    .card-title {
+        font-size: 7px;
+    }
+    .card-cover-container {
+        height: 100px;
+    }
+    .card-cover-img {
+        max-height: 100px;
+    }
+    .nexus-filter-pill {
+        font-size: 7px;
+        padding: 6px 10px;
+    }
+    .nexus-btn-primary {
+        font-size: 8px;
+        padding: 10px 16px;
+    }
+    .nexus-btn-secondary {
+        font-size: 8px;
+        padding: 8px 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .nexus-brand-title {
+        font-size: 8px;
+    }
+    .spotlight-title {
+        font-size: 12px;
+    }
+    .nexus-bento-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+    }
+    .card-title {
+        font-size: 7px;
+    }
+    .card-sub {
+        font-size: 13px;
+    }
+}
+
+/* ========================================================
+   SCROLLBAR STYLING (Retro)
+   ======================================================== */
+::-webkit-scrollbar {
+    width: 10px;
+}
+::-webkit-scrollbar-track {
+    background: var(--bg-base);
+}
+::-webkit-scrollbar-thumb {
+    background: var(--border-arcade);
+    border: 2px solid var(--bg-base);
+    border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-cyan);
+}

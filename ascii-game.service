@@ -1,0 +1,14 @@
+[Unit]
+Description=Terminal Odyssey ASCII Game Server and Tunnel
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/home/ubuntu/ascii-platformer
+ExecStart=/home/ubuntu/ascii-platformer/run_game_daemon.sh
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

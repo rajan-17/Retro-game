@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="description" content="Play 247 classic NES, Game Boy & Game Boy Color games instantly in your browser. Free retro arcade with 60 FPS emulation. No downloads, no coins needed.">
+    <meta property="og:title" content="Nexus Retro Arcade — 247 Classic Games">
+    <meta property="og:description" content="The ultimate browser-based retro arcade. Play Super Mario, Zelda, Pokémon, Mega Man and 240+ more classics instantly at 60 FPS.">
+    <meta property="og:type" content="website">
+    <meta name="theme-color" content="#0a0a12">
+    <title>NEXUS // RETRO ARCADE — 247 Classic Games</title>
+    <link rel="stylesheet" href="css/nexus.css">
+</head>
+<body>
+
+    <!-- CRT Monitor Frame (Full-Page Overlay) -->
+    <div id="crtFrame" class="crt-frame">
+        <div class="crt-scanlines"></div>
+        <div class="crt-vignette"></div>
+
+        <!-- 1. Arcade Marquee Header -->
+        <header class="nexus-nav">
+            <div class="nexus-brand" id="brandHome">
+                <div class="nexus-logo-icon">⚡</div>
+                <div class="nexus-brand-title">NEXUS // RETRO ARCADE</div>
+            </div>
+
+            <div class="nexus-nav-actions">
+                <button id="btnJoinRoomModal" class="nexus-btn-secondary" style="padding: 6px 12px; font-size: 8px; border-color: var(--accent-yellow); color: var(--accent-yellow);" title="Join a 2-Player Room with a 4-letter code">
+                    🔗 JOIN 2P
+                </button>
+                <button id="btnRescanLibrary" class="nexus-btn-secondary" style="padding: 6px 12px; font-size: 8px;" title="Rescan ROMs folder for new games">
+                    🔄 RESCAN
+                </button>
+                <div class="nexus-search-trigger" id="nexusSearchTrigger" title="Quick Search & Commands">
+                    <span>🔍 Search games...</span>
+                    <span class="kbd-shortcut">Ctrl+K</span>
+                </div>
+                <div class="nexus-telemetry-badge">
+                    <span class="status-dot"></span>
+                    <span id="nexusFpsDisplay">60 FPS</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Container -->
+        <main class="nexus-container">
+
+            <!-- VIEW 1: ARCADE HUB -->
+            <section id="viewArcade" class="nexus-view active">
+                
+                <!-- Bento Hero Section -->
+                <div class="nexus-bento-hero">
+                    <!-- Spotlight Card -->
+                    <div class="bento-hero-spotlight">
+                        <div id="spotlightAmbient" class="spotlight-bg-ambient"></div>
+                        <div class="spotlight-content">
+                            <div class="spotlight-tags" id="spotlightTags">
+                                <span id="spotlightSystem" class="spotlight-pill">PLATFORMER • 60 FPS</span>
+                                <span id="spotlightBadge" class="spotlight-pill" style="background: rgba(139, 92, 246, 0.15); color: var(--accent-violet); border-color: rgba(139, 92, 246, 0.3);">FEATURED TITLE</span>
+                            </div>
+                            <h1 id="spotlightTitle" class="spotlight-title">Super Mario Bros. 3</h1>
+                            <div id="spotlightReviewBox" class="spotlight-review-container" style="display:none;"></div>
+                            <p id="spotlightDesc" class="spotlight-desc">
+                                One of the greatest video games ever made! Don the Tanooki and Frog suits, explore 8 themed world maps, defeat the Koopalings, and rescue Princess Peach.
+                            </p>
+                            <div class="spotlight-actions">
+                                <button id="btnPlaySpotlight" class="nexus-btn-primary">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                        <polygon points="5 3 19 12 5 21 5 3"/>
+                                    </svg>
+                                    PLAY NOW
+                                </button>
+                                <button id="btnRandomSpotlight" class="nexus-btn-secondary">
+                                    🎲 SURPRISE
+                                </button>
+                            </div>
+                        </div>
+                        <div class="spotlight-cover-frame">
+                            <img id="spotlightCoverImg" class="spotlight-cover-img" src="covers/super-mario-bros-3.png" alt="Official Box Art">
+                        </div>
+                    </div>
+
+                    <!-- Arcade Side Column -->
+                    <div class="bento-hero-side">
+                        <!-- INSERT COIN / Attract Mode Panel -->
+                        <div class="arcade-attract-panel">
+                            <div class="attract-coin-slot">
+                                <div class="coin-text blink">INSERT COIN</div>
+                                <div class="coin-counter">CREDIT: FREE PLAY</div>
+                            </div>
+                            <div class="attract-stats">
+                                <div class="stat-row">
+                                    <span class="stat-label">CARTRIDGES</span>
+                                    <span class="stat-value">247</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">NES/FAMICOM</span>
+                                    <span class="stat-value">222</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">GAME BOY</span>
+                                    <span class="stat-value">025</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">FRAME RATE</span>
+                                    <span class="stat-value" id="nexusFpsDisplay2">60</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- High Score Board -->
+                        <div class="arcade-high-score-board" id="btnConsoleShowcase">
+                            <div class="hsb-title">★ HALL OF FAME SCORES ★</div>
+                            <div class="hsb-rows">
+                                <div class="hsb-row top1"><span>1ST MARIO BROS 3</span><span>10/10 IGN</span></div>
+                                <div class="hsb-row top2"><span>2ND LEGEND ZELDA</span><span>10/10 GS</span></div>
+                                <div class="hsb-row top3"><span>3RD MEGA MAN 2</span><span>9.8/10</span></div>
+                            </div>
+                            <div class="hsb-marquee">
+                                <span class="hsb-scroll">🎮 NES (222) • 🟩 GB/GBC (25) • ⚡ 60 FPS • CLICK TO SWITCH CONSOLES • </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Scrolling Arcade Ticker -->
+                <div class="arcade-ticker" id="arcadeTicker">
+                    <div class="ticker-track" id="tickerTrack">
+                        ★ SUPER MARIO BROS 3 — #1 ALL-TIME ★ THE LEGEND OF ZELDA — #2 ALL-TIME ★ MEGA MAN 2 — #3 ALL-TIME ★ POKEMON RED — GB CLASSIC ★ CONTRA — #7 ALL-TIME ★ TETRIS — PUZZLE KING ★ FREE PLAY — NO COINS NEEDED ★ 247 GAMES LOADED ★
+                    </div>
+                </div>
+
+                <!-- Category Filters -->
+                <div class="nexus-catalog-bar">
+                    <div class="nexus-filter-group">
+                        <button class="nexus-filter-pill active" data-filter="all">All Games</button>
+                        <button class="nexus-filter-pill" data-filter="top100">⭐ Top 100 Hall of Fame</button>
+                        <button class="nexus-filter-pill" data-filter="gb">🟩 Game Boy & GBC</button>
+                        <button class="nexus-filter-pill" data-filter="nes">🎮 NES / Famicom</button>
+                        <button class="nexus-filter-pill" data-filter="multiplayer">👥 2-Player</button>
+                        <button class="nexus-filter-pill" data-filter="action">🎖️ Action</button>
+                        <button class="nexus-filter-pill" data-filter="platformer">🏰 Platformer</button>
+                        <button class="nexus-filter-pill" data-filter="fighting">🥊 Fighting</button>
+                        <button class="nexus-filter-pill" data-filter="shooter">⚡ Shooter</button>
+                        <button class="nexus-filter-pill" data-filter="arcade">🟡 Arcade</button>
+                        <button class="nexus-filter-pill" data-filter="puzzle">🧩 Puzzle</button>
+                        <button class="nexus-filter-pill" data-filter="adventure">🗝️ Adventure</button>
+                    </div>
+                </div>
+
+                <!-- Games Grid -->
+                <div id="nexusBentoGrid" class="nexus-bento-grid">
+                    <!-- Dynamically populated by js/nexus.js -->
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Join 2-Player Room Modal -->
+    <div id="nexusJoinBackdrop" class="nexus-palette-backdrop">
+        <div class="nexus-palette-box" style="max-width: 440px; border-color: var(--accent-yellow); padding: 22px; gap: 14px; text-align: center;">
+            <div style="font-family: var(--font-pixel); font-size: 13px; color: var(--accent-yellow); text-shadow: 2px 2px 0 #000;">
+                🔗 JOIN 2-PLAYER ROOM
+            </div>
+            <p style="font-family: var(--font-retro); font-size: 20px; color: var(--text-secondary); line-height: 1.3;">
+                Enter the 6-character Room Code from Player 1's screen (press 👥 2P inside any game):
+            </p>
+            <input type="text" id="joinRoomInput" maxlength="6" placeholder="A7K9P2" autocomplete="off" class="join-room-input">
+            <div id="joinRoomError" style="font-family: var(--font-retro); font-size: 18px; color: var(--accent-magenta); min-height: 20px;"></div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <button id="btnJoinAsGuest" class="nexus-btn-primary" style="font-size: 8px; padding: 12px 10px;">
+                    🌐 2-SCREEN PLAY
+                </button>
+                <button id="btnJoinAsController" class="nexus-btn-secondary" style="font-size: 8px; padding: 12px 10px;">
+                    📱 PHONE PAD
+                </button>
+            </div>
+            <button id="btnCloseJoinModal" class="nexus-btn-secondary" style="font-size: 8px; border-color: var(--border-arcade); color: var(--text-muted); align-self: center;">
+                CLOSE [ESC]
+            </button>
+        </div>
+    </div>
+
+    <!-- Command Palette Modal (Ctrl+K) -->
+    <div id="nexusPaletteBackdrop" class="nexus-palette-backdrop">
+        <div class="nexus-palette-box">
+            <div class="palette-input-bar">
+                <span style="font-size: 18px; color: var(--accent-cyan);">⚡</span>
+                <input type="text" id="paletteInput" class="palette-input" placeholder="Search games or commands..." autocomplete="off">
+                <span class="kbd-shortcut">ESC</span>
+            </div>
+            <div id="paletteResults" class="palette-results">
+                <!-- Populated dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Cinema Viewport Modal -->
+    <div id="nexusCinemaModal" class="nexus-cinema-modal">
+        <div class="nexus-cinema-bar">
+            <div class="cinema-title-badge">
+                <button id="btnCloseCinema" class="nexus-btn-secondary" style="padding: 6px 14px; font-size: 8px;">
+                    ← BACK
+                </button>
+                <span id="cinemaGameTitle" style="margin-left: 8px;">GAME TITLE</span>
+            </div>
+            <div>
+                <button id="btnFullscreenCinema" class="nexus-btn-secondary" style="padding: 6px 14px; font-size: 8px;">
+                    ⛶ FULLSCREEN
+                </button>
+            </div>
+        </div>
+        <div class="nexus-cinema-viewport">
+            <button id="btnExitFullscreenFloat" class="cinema-exit-float" title="Exit Fullscreen">✕ EXIT</button>
+            <iframe id="nexusCinemaFrame" src="about:blank" allow="autoplay; fullscreen; gamepad" allowfullscreen></iframe>
+        </div>
+    </div>
+
+    <!-- Application Script -->
+    <script src="js/nexus.js"></script>
+</body>
+</html>

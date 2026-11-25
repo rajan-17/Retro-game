@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Nexus Universal Player</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --accent-cyan: #00f0ff;
+            --accent-magenta: #ff0055;
+            --accent-violet: #8b5cf6;
+            --accent-yellow: #ffe600;
+            --accent-green: #33ff33;
+            --bg-base: #0a0a12;
+            --bg-surface: #12121e;
+            --border-arcade: #333355;
+            --font-pixel: 'Press Start 2P', monospace;
+            --font-retro: 'VT323', monospace;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        html, body {
+            width: 100%;
+            height: 100%;
+            height: 100dvh;
+            overflow: hidden;
+            background: #000000;
+            color: #ffffff;
+            font-family: var(--font-retro);
+            display: flex;
+            flex-direction: column;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        /* Screen Stage */
+        .stage-wrapper {
+            flex: 1;
+            min-height: 0;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background: radial-gradient(circle at 50% 50%, #12121e 0%, #000000 90%);
+        }
+
+        canvas, #remoteVideo, #remoteFallbackImg {
+            display: block;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+            border: 3px solid var(--accent-cyan);
+            box-shadow: 4px 4px 0px #000, 0 0 30px rgba(0, 240, 255, 0.25);
+            max-width: 100%;
+            max-height: 100%;
+            background: #000;
+        }
+
+        /* 2-Player Lobby Modal */
+        .mp-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+        .mp-backdrop.open {
+            display: flex;
+        }
+        .mp-modal {
+            width: 100%;
+            max-width: 460px;
+            background: #10101e;
+            border: 3px solid var(--accent-yellow);
+            border-radius: 6px;
+            padding: 20px;
+            box-shadow: 6px 6px 0 #000, 0 0 30px rgba(255, 230, 0, 0.25);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            text-align: center;
+        }
+        .mp-title {
+            font-family: var(--font-pixel);
+            font-size: 12px;
+            color: var(--accent-yellow);
+            text-shadow: 2px 2px 0 #000;
+        }
+        .mp-mode-tabs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        .mp-mode-tab {
+            font-family: var(--font-pixel);
+            font-size: 8px;
+            padding: 9px 6px;
+            background: #1a1a2e;
+            color: #9999bb;
+            border: 2px solid var(--border-arcade);
+            border-radius: 4px;
+            cursor: pointer;
+            line-height: 1.4;
+        }
+        .mp-mode-tab.active {
+            background: var(--accent-cyan);
+            color: #000;
+            border-color: #fff;
+        }
+        .mp-code-box {
+            background: #070710;
+            border: 2px solid var(--accent-cyan);
+            border-radius: 4px;
+            padding: 10px;
+        }
+        .mp-code-label {
+            font-family: var(--font-pixel);
+            font-size: 7px;
+            color: #8888aa;
+            margin-bottom: 6px;
+        }
+        .mp-code-value {
+            font-family: var(--font-pixel);
+            font-size: 26px;
+            letter-spacing: 8px;
+            color: var(--accent-yellow);
+            text-shadow: 0 0 12px rgba(255,230,0,0.45), 2px 2px 0 #000;
+        }
+        .mp-qr-wrap {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #fff;
+            padding: 8px;
+            border-radius: 4px;
+            border: 3px solid #000;
+            margin: 0 auto;
+        }
+        .mp-hint {
+            font-family: var(--font-retro);
+            font-size: 18px;
+            color: #c0c0d8;
+            line-height: 1.3;
+        }
+        .mp-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .guest-audio-banner {
+            position: absolute;
+            bottom: 18px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 20;
+            background: var(--accent-magenta);
+            color: #fff;
+            font-family: var(--font-pixel);
+            font-size: 9px;
+            padding: 10px 16px;
+            border: 2px solid #000;
+            border-radius: 4px;
+            box-shadow: 3px 3px 0 #000;
+            cursor: pointer;
+        }
+
+        /* CRT Scanlines Filter Overlay */
+        .scanlines {
+            position: absolute;
+            inset: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 0, 0, 0.12) 0px,
+                rgba(0, 0, 0, 0.12) 1px,
+                transparent 1px,
+                transparent 3px
+            );
+            pointer-events: none;
+            opacity: 0.5;
+        }
+
+        /* Nexus Touch Controls Bar */
+        .nexus-touch-bar {
+            width: 100%;
+            padding: 10px 16px env(safe-area-inset-bottom) 16px;
+            background: linear-gradient(180deg, #15152a, #0a0a12);
+            border-top: 3px solid var(--accent-cyan);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            z-index: 10;
+        }
+
+        /* D-Pad */
+        .dpad-grid {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+        }
+        .dpad-row {
+            display: flex;
+            gap: 3px;
+        }
+        .dpad-center {
+            width: 36px;
+            height: 36px;
+            background: #0e1628;
+            border-radius: 4px;
+        }
+        .touch-btn {
+            background: #1a1a2e;
+            color: #ffffff;
+            border: 2px solid var(--border-arcade);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 3px 3px 0px rgba(0, 0, 0, 0.8);
+            transition: transform 0.08s ease, background 0.08s ease;
+            font-family: var(--font-pixel);
+        }
+        .touch-btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: 0 0 0 #000;
+            background: var(--accent-cyan);
+            color: #000;
+            border-color: #ffffff;
+        }
+        .touch-dpad {
+            width: 44px;
+            height: 44px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        /* Center Options / Select */
+        .nexus-center-btns {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            align-items: center;
+        }
+        .nexus-pill {
+            padding: 5px 14px;
+            border-radius: 4px;
+            font-family: var(--font-pixel);
+            font-size: 8px;
+            font-weight: 400;
+            letter-spacing: 1px;
+            background: #1a1a2e;
+            border: 2px solid var(--border-arcade);
+            color: #9cb0ce;
+            box-shadow: 2px 2px 0px rgba(0,0,0,0.6);
+        }
+        .nexus-pill:active {
+            transform: translate(2px, 2px);
+            box-shadow: 0 0 0 #000;
+            background: var(--accent-cyan);
+            color: #000;
+        }
+
+        /* Action Cluster */
+        .nexus-action-cluster {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .nexus-circle-btn {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            font-family: var(--font-pixel);
+            font-size: 14px;
+            font-weight: 400;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 3px 3px 0px rgba(0, 0, 0, 0.8);
+        }
+        .btn-action-a {
+            background: #0070d1;
+            color: #ffffff;
+            border-color: var(--accent-cyan);
+        }
+        .btn-action-b {
+            background: #d62246;
+            color: #ffffff;
+            border-color: var(--accent-magenta);
+        }
+
+        /* Top Status Overlay */
+        .hud-overlay {
+            position: absolute;
+            top: 8px;
+            left: 12px;
+            right: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            pointer-events: none;
+            z-index: 5;
+        }
+        .hud-badge {
+            background: rgba(0, 0, 0, 0.85);
+            border: 2px solid var(--accent-cyan);
+            border-radius: 4px;
+            padding: 4px 12px;
+            font-family: var(--font-pixel);
+            font-size: 8px;
+            font-weight: 400;
+            color: var(--accent-cyan);
+            pointer-events: auto;
+            letter-spacing: 1px;
+            box-shadow: 2px 2px 0px rgba(0,0,0,0.6);
+            text-shadow: 0 0 6px rgba(0,240,255,0.4);
+        }
+        .hud-btn {
+            background: rgba(0, 0, 0, 0.85);
+            border: 2px solid var(--border-arcade);
+            color: #ffffff;
+            border-radius: 4px;
+            padding: 4px 10px;
+            font-family: var(--font-pixel);
+            font-size: 8px;
+            font-weight: 400;
+            cursor: pointer;
+            pointer-events: auto;
+            box-shadow: 2px 2px 0px rgba(0,0,0,0.6);
+            transition: all 0.1s ease;
+        }
+        .hud-btn:hover {
+            border-color: var(--accent-cyan);
+            text-shadow: 0 0 6px rgba(0,240,255,0.4);
+        }
+        .hud-btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: 0 0 0 #000;
+        }
+
+        @media (hover: hover) and (pointer: fine) and (min-width: 900px) {
+            .nexus-touch-bar {
+                display: none;
+            }
+        }
+        @media (max-width: 600px) {
+            .hud-overlay {
+                flex-wrap: wrap;
+                gap: 4px;
+                top: 4px;
+                left: 6px;
+                right: 6px;
+            }
+            .hud-badge {
+                font-size: 7px;
+                padding: 3px 7px;
+                max-width: 150px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            .hud-btn {
+                font-size: 7px;
+                padding: 3px 6px;
+            }
+        }
+        @media (max-height: 480px) {
+            .nexus-touch-bar {
+                padding: 4px 12px env(safe-area-inset-bottom) 12px;
+            }
+            .touch-dpad {
+                width: 36px;
+                height: 36px;
+                font-size: 14px;
+            }
+            .dpad-center {
+                width: 36px;
+                height: 36px;
+            }
+            .nexus-circle-btn {
+                width: 42px;
+                height: 42px;
+                font-size: 13px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="stage-wrapper">
+        <div class="hud-overlay">
+            <span id="gameTitleBadge" class="hud-badge">PLAYING GAME</span>
+            <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                <button id="btn2PMode" class="hud-btn" style="border-color: var(--accent-yellow); color: var(--accent-yellow);">👥 2P</button>
+                <button id="btnToggleSound" class="hud-btn">SFX: ON</button>
+                <button id="btnToggleScanlines" class="hud-btn">CRT: ON</button>
+                <button id="btnReset" class="hud-btn">RESET</button>
+            </div>
+        </div>
+        <canvas id="screen" width="256" height="240"></canvas>
+        <video id="remoteVideo" autoplay playsinline style="display:none;"></video>
+        <img id="remoteFallbackImg" style="display:none;" alt="Remote Stream">
+        <div id="guestAudioBanner" class="guest-audio-banner" style="display:none;">🔊 TAP TO ENABLE AUDIO</div>
+        <div id="scanlines" class="scanlines"></div>
+    </div>
+
+    <!-- 2-Player Multiplayer Lobby Modal -->
+    <div id="mpBackdrop" class="mp-backdrop">
+        <div class="mp-modal">
+            <div class="mp-title">👥 2-DEVICE MULTIPLAYER</div>
+            <div class="mp-mode-tabs">
+                <button id="mpTabStream" class="mp-mode-tab active">🌐 2-SCREEN ONLINE</button>
+                <button id="mpTabController" class="mp-mode-tab">📱 PHONE GAMEPAD</button>
+            </div>
+            <div class="mp-code-box">
+                <div class="mp-code-label">ROOM CODE</div>
+                <div id="mpRoomCode" class="mp-code-value">....</div>
+            </div>
+            <div class="mp-qr-wrap">
+                <canvas id="mpQrCanvas" width="148" height="148"></canvas>
+            </div>
+            <div id="mpModeHint" class="mp-hint">
+                Scan QR code or share link with Device 2 to watch live & play as Player 2 anywhere!
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; font-family:var(--font-pixel); font-size:8px; padding:6px 10px; background:#070710; border-radius:4px;">
+                <span id="mpStatusText" style="color:var(--accent-green);">CREATING ROOM...</span>
+                <span id="mpPingText" style="color:var(--accent-cyan);">PING: --</span>
+            </div>
+            <div class="mp-actions">
+                <button id="mpCopyBtn" class="hud-btn" style="border-color: var(--accent-cyan); padding: 9px 14px;">📋 COPY INVITE LINK</button>
+                <button id="mpCloseBtn" class="hud-btn" style="border-color: var(--accent-magenta); padding: 9px 14px;">CLOSE</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Responsive Touch Gamepad -->
+    <div class="nexus-touch-bar">
+        <!-- D-Pad -->
+        <div class="dpad-grid">
+            <div class="dpad-row">
+                <button id="btnUp" class="touch-btn touch-dpad" aria-label="Up">▲</button>
+            </div>
+            <div class="dpad-row">
+                <button id="btnLeft" class="touch-btn touch-dpad" aria-label="Left">◄</button>
+                <div class="dpad-center"></div>
+                <button id="btnRight" class="touch-btn touch-dpad" aria-label="Right">►</button>
+            </div>
+            <div class="dpad-row">
+                <button id="btnDown" class="touch-btn touch-dpad" aria-label="Down">▼</button>
+            </div>
+        </div>
+
+        <!-- Center Select / Start -->
+        <div class="nexus-center-btns">
+            <button id="btnSelect" class="touch-btn nexus-pill">SELECT</button>
+            <button id="btnStart" class="touch-btn nexus-pill">START</button>
+        </div>
+
+        <!-- Right Action Buttons -->
+        <div class="nexus-action-cluster">
+            <button id="btnB" class="touch-btn nexus-circle-btn btn-action-b" aria-label="B Button">B</button>
+            <button id="btnA" class="touch-btn nexus-circle-btn btn-action-a" aria-label="A Button">A</button>
+        </div>
+    </div>
+
+    <!-- Standalone Local Engine Scripts -->
+    <script src="js/emulator/jsnes.min.js"></script>
+    <script src="js/emulator/gameboy.min.js"></script>
+    <script src="js/qr.js"></script>
+    <script src="js/netplay.js"></script>
+    <script src="js/player.js"></script>
+</body>
+</html>
