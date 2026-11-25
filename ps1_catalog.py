@@ -300,7 +300,11 @@ def scan_ps1(roms_dir):
             e['available'] = False
             entries[item['id']] = e
 
+    # Box art lives in <repo>/covers/. Homebrew discs usually have none: send None so the
+    # UI shows the icon instead of requesting a file that would 403.
+    covers_dir = os.path.join(os.path.dirname(os.path.realpath(roms_dir)), 'covers')
     for e in entries.values():
         e.pop('match_keys', None)
-        e['cover'] = f"covers/{e['id']}.png"
+        cover = f"covers/{e['id']}.png"
+        e['cover'] = cover if os.path.isfile(os.path.join(covers_dir, f"{e['id']}.png")) else None
     return list(entries.values())

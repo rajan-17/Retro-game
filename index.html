@@ -5,12 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="description" content="Play 247 classic NES, Game Boy & Game Boy Color games instantly in your browser. Free retro arcade with 60 FPS emulation. No downloads, no coins needed.">
-    <meta property="og:title" content="Nexus Retro Arcade — 247 Classic Games">
+    <meta name="description" content="Play classic NES, Game Boy, Game Boy Color and PlayStation games instantly in your browser. Free retro arcade with 60 FPS emulation. No downloads, no coins needed.">
+    <meta property="og:title" content="Nexus Retro Arcade — NES, Game Boy &amp; PS1 Classics">
     <meta property="og:description" content="The ultimate browser-based retro arcade. Play Super Mario, Zelda, Pokémon, Mega Man and 240+ more classics instantly at 60 FPS.">
     <meta property="og:type" content="website">
     <meta name="theme-color" content="#0a0a12">
-    <title>NEXUS // RETRO ARCADE — 247 Classic Games</title>
+    <title>NEXUS // RETRO ARCADE — NES, Game Boy &amp; PS1 Classics</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Ctext y=%27.9em%27 font-size=%2790%27%3E%F0%9F%95%B9%EF%B8%8F%3C/text%3E%3C/svg%3E">
     <link rel="stylesheet" href="css/nexus.css">
 </head>
 <body>
@@ -28,11 +29,11 @@
             </div>
 
             <div class="nexus-nav-actions">
-                <button id="btnJoinRoomModal" class="nexus-btn-secondary" style="padding: 6px 12px; font-size: 8px; border-color: var(--accent-yellow); color: var(--accent-yellow);" title="Join a 2-Player Room with a 4-letter code">
+                <button id="btnJoinRoomModal" class="nexus-btn-secondary" style="padding: 6px 12px; font-size: 8px; border-color: var(--accent-yellow); color: var(--accent-yellow);" title="Join a 2-Player Room with a 6-character code">
                     🔗 JOIN 2P
                 </button>
-                <button id="btnRescanLibrary" class="nexus-btn-secondary" style="padding: 6px 12px; font-size: 8px;" title="Rescan ROMs folder for new games">
-                    🔄 RESCAN
+                <button id="btnRescanLibrary" class="nexus-btn-secondary" style="padding: 6px 12px; font-size: 8px;" title="Rescan ROMs folder for new games" aria-label="Rescan library">
+                    🔄 <span class="rescan-label">RESCAN</span>
                 </button>
                 <div class="nexus-search-trigger" id="nexusSearchTrigger" title="Quick Search & Commands">
                     <span>🔍 Search games...</span>
@@ -94,15 +95,19 @@
                             <div class="attract-stats">
                                 <div class="stat-row">
                                     <span class="stat-label">CARTRIDGES</span>
-                                    <span class="stat-value">247</span>
+                                    <span class="stat-value" id="statTotal">297</span>
                                 </div>
                                 <div class="stat-row">
                                     <span class="stat-label">NES/FAMICOM</span>
-                                    <span class="stat-value">222</span>
+                                    <span class="stat-value" id="statNes">220</span>
                                 </div>
                                 <div class="stat-row">
                                     <span class="stat-label">GAME BOY</span>
-                                    <span class="stat-value">025</span>
+                                    <span class="stat-value" id="statGb">27</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">PLAYSTATION</span>
+                                    <span class="stat-value" id="statPs1">50</span>
                                 </div>
                                 <div class="stat-row">
                                     <span class="stat-label">FRAME RATE</span>
@@ -120,7 +125,7 @@
                                 <div class="hsb-row top3"><span>3RD MEGA MAN 2</span><span>9.8/10</span></div>
                             </div>
                             <div class="hsb-marquee">
-                                <span class="hsb-scroll">🎮 NES (222) • 🟩 GB/GBC (25) • ⚡ 60 FPS • CLICK TO SWITCH CONSOLES • </span>
+                                <span class="hsb-scroll" id="hsbMarquee">🎮 NES • 🟩 GB/GBC • 💿 PS1 • ⚡ 60 FPS • CLICK TO SWITCH CONSOLES • </span>
                             </div>
                         </div>
                     </div>
@@ -129,7 +134,7 @@
                 <!-- Scrolling Arcade Ticker -->
                 <div class="arcade-ticker" id="arcadeTicker">
                     <div class="ticker-track" id="tickerTrack">
-                        ★ SUPER MARIO BROS 3 — #1 ALL-TIME ★ THE LEGEND OF ZELDA — #2 ALL-TIME ★ MEGA MAN 2 — #3 ALL-TIME ★ POKEMON RED — GB CLASSIC ★ CONTRA — #7 ALL-TIME ★ TETRIS — PUZZLE KING ★ FREE PLAY — NO COINS NEEDED ★ 247 GAMES LOADED ★
+                        ★ SUPER MARIO BROS 3 — #1 ALL-TIME ★ THE LEGEND OF ZELDA — #2 ALL-TIME ★ MEGA MAN 2 — #3 ALL-TIME ★ POKEMON RED — GB CLASSIC ★ CONTRA — #7 ALL-TIME ★ TETRIS — PUZZLE KING ★ FREE PLAY — NO COINS NEEDED ★ NES • GAME BOY • PLAYSTATION ★
                     </div>
                 </div>
 
@@ -140,7 +145,7 @@
                         <button class="nexus-filter-pill" data-filter="top100">⭐ Top 100 Hall of Fame</button>
                         <button class="nexus-filter-pill" data-filter="gb">🟩 Game Boy & GBC</button>
                         <button class="nexus-filter-pill" data-filter="nes">🎮 NES / Famicom</button>
-                        <button class="nexus-filter-pill" data-filter="ps1">💿 PS1 Top 50 Hall of Fame</button>
+                        <button class="nexus-filter-pill" data-filter="ps1">💿 PlayStation</button>
                         <button class="nexus-filter-pill" data-filter="multiplayer">👥 2-Player</button>
                         <button class="nexus-filter-pill" data-filter="action">🎖️ Action</button>
                         <button class="nexus-filter-pill" data-filter="platformer">🏰 Platformer</button>

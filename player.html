@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Nexus Universal Player</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Ctext y=%27.9em%27 font-size=%2790%27%3E%F0%9F%95%B9%EF%B8%8F%3C/text%3E%3C/svg%3E">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
@@ -120,7 +121,7 @@
         }
         .mp-code-label {
             font-family: var(--font-pixel);
-            font-size: 7px;
+            font-size: 8px;
             color: #8888aa;
             margin-bottom: 6px;
         }
@@ -168,6 +169,44 @@
             border-radius: 4px;
             box-shadow: 3px 3px 0 #000;
             cursor: pointer;
+        }
+
+        /* Guest join errors (room not found / full / host left) */
+        .guest-notice {
+            position: absolute;
+            z-index: 30;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: min(92vw, 420px);
+            background: #10101e;
+            border: 3px solid var(--accent-magenta);
+            border-radius: 6px;
+            box-shadow: 6px 6px 0 #000, 0 0 30px rgba(255, 0, 85, 0.25);
+            padding: 20px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .guest-notice strong {
+            font-family: var(--font-pixel);
+            font-size: 13px;
+            color: var(--accent-magenta);
+            text-shadow: 2px 2px 0 #000;
+        }
+        .guest-notice p { font-size: 20px; color: #c0c0d8; line-height: 1.2; }
+        .guest-notice a {
+            align-self: center;
+            font-family: var(--font-pixel);
+            font-size: 9px;
+            color: #000;
+            background: var(--accent-cyan);
+            padding: 10px 14px;
+            border: 2px solid #fff;
+            border-radius: 4px;
+            text-decoration: none;
+            box-shadow: 3px 3px 0 #000;
         }
 
         /* CRT Scanlines Filter Overlay */
@@ -373,24 +412,116 @@
                 padding: 3px 6px;
             }
         }
-        @media (max-height: 480px) {
+        .hud-actions {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        /* ===== Touch devices: bigger HUD + system buttons (>= 36-40px tap targets) ===== */
+        @media (pointer: coarse), (max-width: 900px) {
+            .hud-btn {
+                min-height: 36px;
+                padding: 6px 10px;
+                font-size: 8px;
+            }
+            .hud-badge {
+                font-size: 8px;
+                padding: 9px 10px;
+            }
+            .nexus-pill {
+                min-height: 36px;
+                min-width: 78px;
+            }
+            .mp-code-label { font-size: 8px; }
+            .mp-modal { max-height: calc(100dvh - 24px); overflow-y: auto; }
+        }
+
+        /* ===== Phone / tablet PORTRAIT: HUD above the screen, big thumb pad below ===== */
+        @media (orientation: portrait) and (max-width: 900px) {
+            .stage-wrapper {
+                flex-direction: column;
+                justify-content: flex-start;
+                padding: calc(6px + env(safe-area-inset-top)) 8px 8px;
+                gap: 8px;
+            }
+            .hud-overlay {
+                position: static;
+                width: 100%;
+                flex-wrap: wrap;
+                gap: 6px;
+            }
+            .hud-badge { max-width: 100%; }
+            /* centre the game in whatever space is left under the HUD */
+            canvas#screen, #remoteVideo, #remoteFallbackImg { margin-block: auto; }
             .nexus-touch-bar {
-                padding: 4px 12px env(safe-area-inset-bottom) 12px;
+                flex: 0 0 auto;
+                min-height: 36dvh;
+                display: grid;
+                grid-template-columns: auto 1fr auto;
+                grid-template-areas: "dpad . ab" "sys sys sys";
+                align-items: center;
+                row-gap: 14px;
+                padding: 16px clamp(12px, 5vw, 32px) calc(14px + env(safe-area-inset-bottom));
             }
-            .touch-dpad {
-                width: 36px;
-                height: 36px;
-                font-size: 14px;
-            }
-            .dpad-center {
-                width: 36px;
-                height: 36px;
+            .dpad-grid { grid-area: dpad; }
+            .nexus-action-cluster { grid-area: ab; gap: clamp(10px, 4vw, 20px); align-items: flex-start; }
+            .nexus-center-btns { grid-area: sys; flex-direction: row; justify-content: center; gap: 18px; }
+            .touch-dpad, .dpad-center {
+                width: clamp(48px, 15vw, 66px);
+                height: clamp(48px, 15vw, 66px);
+                font-size: clamp(18px, 5vw, 24px);
             }
             .nexus-circle-btn {
-                width: 42px;
-                height: 42px;
-                font-size: 13px;
+                width: clamp(58px, 18vw, 80px);
+                height: clamp(58px, 18vw, 80px);
+                font-size: clamp(16px, 5vw, 22px);
             }
+            /* classic layout: A sits a little higher than B */
+            .btn-action-a { margin-top: 0; }
+            .btn-action-b { margin-top: clamp(18px, 6vw, 30px); }
+        }
+
+        /* ===== Phone LANDSCAPE: D-pad left, game centre, A/B right (nothing covers the game) ===== */
+        @media (orientation: landscape) and (max-height: 600px) and (pointer: coarse) {
+            body {
+                display: grid;
+                grid-template-columns: minmax(170px, 1fr) minmax(0, 2.6fr) minmax(170px, 1fr);
+                grid-template-rows: minmax(0, 1fr) auto;
+                background: radial-gradient(circle at 50% 50%, #15152a 0%, #05050c 80%);
+            }
+            .stage-wrapper {
+                grid-column: 2;
+                grid-row: 1 / span 2;
+                height: 100%;
+                padding: 6px 0;
+                background: transparent;
+            }
+            .hud-overlay {
+                position: fixed;
+                top: calc(6px + env(safe-area-inset-top));
+                left: calc(6px + env(safe-area-inset-left));
+                right: calc(6px + env(safe-area-inset-right));
+                align-items: flex-start;
+                flex-wrap: nowrap;
+            }
+            .hud-badge { max-width: calc(25vw - 16px); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+            .hud-actions {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                width: calc(25vw - 16px);
+                max-width: 220px;
+            }
+            .nexus-touch-bar { display: contents; }
+            .dpad-grid { grid-column: 1; grid-row: 1; align-self: center; justify-self: center; margin-top: 36px; }
+            .nexus-action-cluster { grid-column: 3; grid-row: 1; align-self: center; justify-self: center; margin-top: 64px; }
+            .nexus-center-btns { display: contents; }
+            #btnSelect { grid-column: 1; grid-row: 2; justify-self: center; margin-bottom: calc(10px + env(safe-area-inset-bottom)); }
+            #btnStart { grid-column: 3; grid-row: 2; justify-self: center; margin-bottom: calc(10px + env(safe-area-inset-bottom)); }
+            .touch-dpad, .dpad-center { width: clamp(44px, 12vh, 58px); height: clamp(44px, 12vh, 58px); font-size: 20px; }
+            .nexus-circle-btn { width: clamp(52px, 15vh, 70px); height: clamp(52px, 15vh, 70px); font-size: 18px; }
+            .btn-action-b { margin-top: 24px; }
         }
     </style>
 </head>
@@ -398,7 +529,7 @@
     <div class="stage-wrapper">
         <div class="hud-overlay">
             <span id="gameTitleBadge" class="hud-badge">PLAYING GAME</span>
-            <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+            <div class="hud-actions">
                 <button id="btn2PMode" class="hud-btn" style="border-color: var(--accent-yellow); color: var(--accent-yellow);">👥 2P</button>
                 <button id="btnToggleSound" class="hud-btn">SFX: ON</button>
                 <button id="btnToggleScanlines" class="hud-btn">CRT: ON</button>
