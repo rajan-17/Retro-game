@@ -20,3 +20,9 @@ temp_test*.html
 # Note: To push Code Only without ROM/box-art binaries, uncomment below:
 # roms/
 # covers/
+
+# PlayStation: your own disc images and BIOS dumps stay local (large + copyrighted)
+roms/ps1/*
+!roms/ps1/.gitkeep
+bios/*
+!bios/.gitkeep

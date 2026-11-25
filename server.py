@@ -16,6 +16,9 @@ import hashlib
 import base64
 import struct
 import secrets
+import shutil
+
+import ps1_catalog
 from collections import defaultdict, deque
 from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
 
@@ -31,6 +34,7 @@ ALLOWED_ROOT_FILES = {
     '/player.html': 'player.html',
     '/controller.html': 'controller.html',
     '/games.json': 'games.json',
+    '/ps1.html': 'ps1.html',
 }
 ALLOWED_JS_FILES = {
     '/js/nexus.js',
@@ -40,6 +44,7 @@ ALLOWED_JS_FILES = {
     '/js/controller.js',
     '/js/emulator/jsnes.min.js',
     '/js/emulator/gameboy.min.js',
+    '/js/ps1.js',
 }
 VALID_ROM_PATH_RE = re.compile(r'^roms/[A-Za-z0-9 _()\[\].!,\'-]+\.(?:nes|gb|gbc)$', re.IGNORECASE)
 VALID_DATA_IMAGE_RE = re.compile(r'^data:image/(?:webp|png|jpeg);base64,[A-Za-z0-9+/=]+$')
@@ -57,6 +62,37 @@ CSP_HEADER = (
     "base-uri 'self'; "
     "form-action 'self'"
 )
+# PS1 player only: EmulatorJS compiles its WebAssembly core from a blob: URL and
+# decompresses cores in Web Workers whose Emscripten glue calls eval() ('unsafe-eval').
+# Scoped to /ps1.html and /emulatorjs/ so the rest of the arcade keeps the strict policy above;
+# scripts are still same-origin/blob only, and ps1.js never injects unescaped input.
+PS1_CSP_HEADER = (
+    "default-src 'self'; "
+    "script-src 'self' blob: 'unsafe-eval' 'wasm-unsafe-eval'; "
+    "worker-src 'self' blob:; "
+    "style-src 'self' 'unsafe-inline'; "
+    "font-src 'self' data:; "
+    "img-src 'self' data: blob:; "
+    "media-src 'self' blob: mediastream:; "
+    "connect-src 'self' blob: data:; "
+    "frame-ancestors 'self'; "
+    "object-src 'none'; "
+    "base-uri 'self'; "
+    "form-action 'self'"
+)
+PS1_ROM_PATH_RE = re.compile(r"^roms/ps1/[A-Za-z0-9 _()\[\].!,'&+-]+\.(?:chd|pbp|iso|bin|img|zip|7z)$", re.IGNORECASE)
+EMULATORJS_EXTS = ('.js', '.css', '.json', '.data', '.wasm')
+EXTRA_MIME_TYPES = {
+    '.wasm': 'application/wasm',
+    '.data': 'application/octet-stream',
+    '.chd': 'application/octet-stream',
+    '.pbp': 'application/octet-stream',
+    '.iso': 'application/octet-stream',
+    '.bin': 'application/octet-stream',
+    '.img': 'application/octet-stream',
+    '.7z': 'application/x-7z-compressed',
+    '.zip': 'application/zip',
+}
 
 CATALOG_LOCK = threading.Lock()
 CACHED_GAMES = []
@@ -2802,17 +2838,23 @@ def scan_roms():
         if not is_gb_game and any(kw in gid for kw in multiplayer_keywords):
             g['multiplayer'] = True
 
+    # PlayStation: Top 50 Hall of Fame (shown even before a disc is added) + any extra discs
+    raw_list.extend(ps1_catalog.scan_ps1(ROMS_DIR))
+
     # Sort: Top 20 games (ranks 1 to 20) first, then priority games, then others alphabetically
     def sort_key(g):
         if (g.get('top100') or g.get('top50') or g.get('top20')) and g.get('rank'):
             return (0, g['rank'])
         if g.get('gb') and g.get('review_score'):
             return (1, g['title'].lower())
+        if g.get('ps1'):
+            # Playable discs first, then by Hall of Fame rank
+            return (2, 0 if g.get('available') else 1, g.get('rank') or 999, g['title'].lower())
         priority_order = ['1200-in-1', 'super-tilt-bro', 'twindragons', 'themadwizard']
         for idx, p in enumerate(priority_order):
             if p in g['id']:
-                return (2, idx)
-        return (3, g['title'].lower())
+                return (3, idx)
+        return (4, g['title'].lower())
 
     games = sorted(raw_list, key=sort_key)
 
@@ -2825,13 +2867,21 @@ def scan_roms():
     return games
 
 
+def _catalog_mtime():
+    """Newest mtime of roms/ and roms/ps1/ (adding a disc only touches the subfolder)."""
+    newest = 0
+    for d in (ROMS_DIR, ps1_catalog.ps1_dir(ROMS_DIR)):
+        try:
+            newest = max(newest, os.stat(d).st_mtime)
+        except OSError:
+            pass
+    return newest
+
+
 def get_cached_games(force_rescan=False):
     """Return cached game catalog, rescanning only if ROMS_DIR mtime changed or forced."""
     global CACHED_GAMES, _cached_roms_mtime
-    try:
-        mtime = os.stat(ROMS_DIR).st_mtime if os.path.exists(ROMS_DIR) else 0
-    except Exception:
-        mtime = 0
+    mtime = _catalog_mtime()
     with CATALOG_LOCK:
         if force_rescan or not CACHED_GAMES or mtime != _cached_roms_mtime:
             CACHED_GAMES = scan_roms()
@@ -2848,7 +2898,7 @@ def watcher_loop():
     while True:
         try:
             if os.path.exists(ROMS_DIR):
-                mtime = os.stat(ROMS_DIR).st_mtime
+                mtime = _catalog_mtime()
                 if mtime != _last_mtime:
                     _last_mtime = mtime
                     games = get_cached_games(force_rescan=True)
@@ -3323,7 +3373,9 @@ class NexusServerHandler(SimpleHTTPRequestHandler):
         self.send_header("Referrer-Policy", "no-referrer")
         self.send_header("Permissions-Policy", "geolocation=(), microphone=(), camera=(), usb=()")
         self.send_header("Cross-Origin-Resource-Policy", "same-origin")
-        self.send_header("Content-Security-Policy", CSP_HEADER)
+        req_path = urllib.parse.urlparse(self.path).path
+        is_ps1 = req_path == "/ps1.html" or req_path.startswith("/emulatorjs/")
+        self.send_header("Content-Security-Policy", PS1_CSP_HEADER if is_ps1 else CSP_HEADER)
         super().end_headers()
 
     def list_directory(self, path):
@@ -3447,6 +3499,12 @@ class NexusServerHandler(SimpleHTTPRequestHandler):
             return candidate
         if lower.startswith("roms/") and lower.endswith((".nes", ".gb", ".gbc")):
             return candidate
+        if lower.startswith("roms/ps1/") and PS1_ROM_PATH_RE.match(rel):
+            return candidate
+        if lower.startswith("emulatorjs/data/") and lower.endswith(EMULATORJS_EXTS):
+            return candidate
+        if rel in [f"bios/{n}" for n in ps1_catalog.PS1_BIOS_FILES]:
+            return candidate
 
         return None
 
@@ -3500,6 +3558,10 @@ class NexusServerHandler(SimpleHTTPRequestHandler):
             self._send_json(200, games)
             return
 
+        if path == "/api/ps1":
+            self._send_json(200, {"bios": ps1_catalog.find_bios(BASE_DIR)})
+            return
+
         if path == "/api/games":
             games = get_cached_games(force_rescan=False)
             self._send_json(200, games, cache_control="public, max-age=30")
@@ -3512,22 +3574,31 @@ class NexusServerHandler(SimpleHTTPRequestHandler):
             return
 
         # Serve safely validated file directly
+        # Stream from disk: PS1 disc images are hundreds of MB, so never buffer them whole.
         try:
-            ctype = self.guess_type(safe_target)
-            with open(safe_target, "rb") as fp:
-                content = fp.read()
+            ext = os.path.splitext(safe_target)[1].lower()
+            ctype = EXTRA_MIME_TYPES.get(ext) or self.guess_type(safe_target)
+            size = os.path.getsize(safe_target)
+            fp = open(safe_target, "rb")
+        except Exception:
+            self.send_error(500, "Internal Server Error")
+            return
+        try:
             self.send_response(200)
             self.send_header("Content-Type", ctype)
-            self.send_header("Content-Length", str(len(content)))
-            if path.startswith(("/covers/", "/roms/", "/js/emulator/")):
+            self.send_header("Content-Length", str(size))
+            if path.startswith(("/covers/", "/roms/", "/js/emulator/", "/emulatorjs/", "/bios/")):
                 self.send_header("Cache-Control", "public, max-age=86400")
             else:
                 self.send_header("Cache-Control", "no-cache")
             self.end_headers()
             if self.command != "HEAD":
-                self.wfile.write(content)
-        except Exception:
-            self.send_error(500, "Internal Server Error")
+                self.connection.settimeout(120.0)
+                shutil.copyfileobj(fp, self.wfile, 1024 * 1024)
+        except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError, TimeoutError):
+            self.close_connection = True
+        finally:
+            fp.close()
 
     def log_message(self, format, *args):
         pass
