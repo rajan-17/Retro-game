@@ -2680,6 +2680,72 @@ KNOWN_GAMES = {
         'color': '#e2eafc',
         'gradient': 'radial-gradient(circle at 75% 25%, #1b253b 0%, #06080e 70%)',
         'desc': 'The original 1972 table tennis arcade simulation that launched the entire interactive entertainment industry.'
+    },
+    'elemental-fighter': {
+        'title': 'Elemental Fighter',
+        'sub': 'Game Boy Homebrew 1v1 Fighter',
+        'system': 'FIGHTING',
+        'console': 'gb',
+        'gb': True,
+        'icon': '🥊',
+        'color': '#e63946',
+        'gradient': 'radial-gradient(circle at 75% 25%, #6a0e1c 0%, #06080e 70%)',
+        'desc': 'Homebrew Game Boy 1v1 fighting game featuring elemental warriors, special attacks, and head-to-head combat.'
+    },
+    'burly-bear-vs-the-mean-foxes': {
+        'title': 'Burly Bear vs. The Mean Foxes',
+        'sub': 'GBC Homebrew Arena Brawler',
+        'system': 'FIGHTING',
+        'console': 'gbc',
+        'gb': True,
+        'icon': '🐻',
+        'color': '#ff5376',
+        'gradient': 'radial-gradient(circle at 75% 25%, #6a0e1c 0%, #06080e 70%)',
+        'desc': 'Open-source Game Boy Color beat-em-up action brawler by Sebastian Mihai featuring wave combat against rival foxes.'
+    },
+    'moon-fighter': {
+        'title': 'Moon Fighter',
+        'sub': 'GBC Homebrew Combat Fighter',
+        'system': 'FIGHTING',
+        'console': 'gbc',
+        'gb': True,
+        'icon': '🥊',
+        'color': '#8b5cf6',
+        'gradient': 'radial-gradient(circle at 75% 25%, #4c1d95 0%, #06080e 70%)',
+        'desc': 'Homebrew Game Boy Color arcade combat game featuring fast-paced fighter duels.'
+    },
+    'bubble-factory': {
+        'title': 'Bubble Factory',
+        'sub': 'Open-Source GB Bubble Arcade',
+        'system': 'ARCADE',
+        'console': 'gb',
+        'gb': True,
+        'icon': '🫧',
+        'color': '#00f0ff',
+        'gradient': 'radial-gradient(circle at 75% 25%, #004d54 0%, #06080e 70%)',
+        'desc': 'Open-source Game Boy arcade puzzle-action game inspired by classic single-screen bubble-clearing hits.'
+    },
+    'bubblewrap': {
+        'title': 'Bubblewrap',
+        'sub': 'GBC Game Jam Arcade',
+        'system': 'ARCADE',
+        'console': 'gbc',
+        'gb': True,
+        'icon': '🫧',
+        'color': '#06d6a0',
+        'gradient': 'radial-gradient(circle at 75% 25%, #05543f 0%, #06080e 70%)',
+        'desc': 'Game Boy Color arcade action jam entry with crisp single-screen bubble-popping mechanics.'
+    },
+    'a-walk-in-snow': {
+        'title': 'A Walk in Snow',
+        'sub': 'GBC Homebrew Snow Platformer',
+        'system': 'PLATFORMER',
+        'console': 'gbc',
+        'gb': True,
+        'icon': '❄️',
+        'color': '#38bdf8',
+        'gradient': 'radial-gradient(circle at 75% 25%, #0c4a6e 0%, #06080e 70%)',
+        'desc': 'Homebrew Game Boy Color winter snow adventure developed for GB Showdown.'
     }
 }
 
@@ -2832,7 +2898,8 @@ def scan_roms():
         'archon', 'joust', 'spy-vs-spy', 'blades-of-steel', 'tecmo', 'r-c-pro-am', 'micro-machines'
     )
     for g in raw_list:
-        g['cover'] = f"covers/{g['id']}.png"
+        cover_rel = f"covers/{g['id']}.png"
+        g['cover'] = cover_rel if os.path.isfile(os.path.join(BASE_DIR, cover_rel)) else None
         gid = g.get('id', '').lower()
         is_gb_game = g.get('gb') or g.get('console') in ('gb', 'gbc')
         if not is_gb_game and any(kw in gid for kw in multiplayer_keywords):

@@ -5029,6 +5029,20 @@
     "cover": "covers/3in12ppak.png"
   },
   {
+    "id": "a-walk-in-snow",
+    "title": "A Walk In Snow",
+    "sub": "Arcade Retro Classic",
+    "system": "ARCADE",
+    "rom": "roms/A Walk in Snow (Homebrew).gbc",
+    "icon": "\ud83d\udd79\ufe0f",
+    "color": "#00f0ff",
+    "gradient": "radial-gradient(circle at 75% 25%, #035b66 0%, #06080e 70%)",
+    "desc": "Authentic retro arcade cartridge: A Walk In Snow. Playable instantly in 60 FPS.",
+    "console": "gbc",
+    "gb": true,
+    "cover": "covers/a-walk-in-snow.png"
+  },
+  {
     "id": "aethos-beginnings",
     "title": "Aethos Beginnings",
     "sub": "Arcade Retro Classic",
@@ -5229,6 +5243,48 @@
     "cover": "covers/brickster.png"
   },
   {
+    "id": "bubble-factory",
+    "title": "Bubble Factory",
+    "sub": "Puzzle Retro Classic",
+    "system": "PUZZLE",
+    "rom": "roms/Bubble Factory (Homebrew).gb",
+    "icon": "\ud83e\udde9",
+    "color": "#ef476f",
+    "gradient": "radial-gradient(circle at 75% 25%, #631c2d 0%, #06080e 70%)",
+    "desc": "Authentic retro puzzle cartridge: Bubble Factory. Playable instantly in 60 FPS.",
+    "console": "gb",
+    "gb": true,
+    "cover": "covers/bubble-factory.png"
+  },
+  {
+    "id": "bubblewrap",
+    "title": "Bubblewrap",
+    "sub": "Puzzle Retro Classic",
+    "system": "PUZZLE",
+    "rom": "roms/Bubblewrap (Homebrew).gbc",
+    "icon": "\ud83e\udde9",
+    "color": "#ef476f",
+    "gradient": "radial-gradient(circle at 75% 25%, #631c2d 0%, #06080e 70%)",
+    "desc": "Authentic retro puzzle cartridge: Bubblewrap. Playable instantly in 60 FPS.",
+    "console": "gbc",
+    "gb": true,
+    "cover": "covers/bubblewrap.png"
+  },
+  {
+    "id": "burly-bear-vs-the-mean-foxes",
+    "title": "Burly Bear Vs The Mean Foxes",
+    "sub": "Arcade Retro Classic",
+    "system": "ARCADE",
+    "rom": "roms/Burly Bear vs The Mean Foxes (Homebrew).gbc",
+    "icon": "\ud83d\udd79\ufe0f",
+    "color": "#00f0ff",
+    "gradient": "radial-gradient(circle at 75% 25%, #035b66 0%, #06080e 70%)",
+    "desc": "Authentic retro arcade cartridge: Burly Bear Vs The Mean Foxes. Playable instantly in 60 FPS.",
+    "console": "gbc",
+    "gb": true,
+    "cover": "covers/burly-bear-vs-the-mean-foxes.png"
+  },
+  {
     "title": "C-Room",
     "sub": "Dungeon Maze & Escape",
     "system": "ADVENTURE",
@@ -5387,6 +5443,20 @@
     "id": "driar",
     "rom": "roms/driar.nes",
     "cover": "covers/driar.png"
+  },
+  {
+    "id": "elemental-fighter",
+    "title": "Elemental Fighter",
+    "sub": "Action Retro Classic",
+    "system": "ACTION",
+    "rom": "roms/Elemental Fighter (Homebrew).gb",
+    "icon": "\ud83c\udf96\ufe0f",
+    "color": "#ff5376",
+    "gradient": "radial-gradient(circle at 75% 25%, #6a0e1c 0%, #06080e 70%)",
+    "desc": "Authentic retro action cartridge: Elemental Fighter. Playable instantly in 60 FPS.",
+    "console": "gb",
+    "gb": true,
+    "cover": "covers/elemental-fighter.png"
   },
   {
     "id": "f-theta",
@@ -5869,6 +5939,20 @@
     "console": "nes",
     "nes": true,
     "cover": "covers/mineshaft.png"
+  },
+  {
+    "id": "moon-fighter",
+    "title": "Moon Fighter",
+    "sub": "Action Retro Classic",
+    "system": "ACTION",
+    "rom": "roms/Moon Fighter (Homebrew).gbc",
+    "icon": "\ud83c\udf96\ufe0f",
+    "color": "#ff5376",
+    "gradient": "radial-gradient(circle at 75% 25%, #6a0e1c 0%, #06080e 70%)",
+    "desc": "Authentic retro action cartridge: Moon Fighter. Playable instantly in 60 FPS.",
+    "console": "gbc",
+    "gb": true,
+    "cover": "covers/moon-fighter.png"
   },
   {
     "id": "mouser-ii",

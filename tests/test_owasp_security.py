@@ -164,20 +164,20 @@ def run_suite():
         print("[PASS] A05: PS1 emulator CSP relaxation is scoped to /ps1.html + /emulatorjs/ only")
 
         # 3. Functional API & Active Assets
-        # Catalog = 247 NES/Famicom/Game Boy titles + the 50-entry PS1 Hall of Fame (always listed,
+        # Catalog = 253 NES/Famicom/Game Boy titles + the 50-entry PS1 Hall of Fame (always listed,
         # even before discs are added). Extra local PS1 discs (git-ignored) may add more entries.
         with urllib.request.urlopen(BASE_URL + "/api/games", timeout=4) as r:
             games = json.loads(r.read().decode("utf-8"))
         retro = [g for g in games if not g.get("ps1")]
         ps1_hof = [g for g in games if g.get("ps1_top50")]
-        assert len(retro) == 247, f"Expected 247 NES/GB games, got {len(retro)}"
+        assert len(retro) == 253, f"Expected 253 NES/GB games, got {len(retro)}"
         assert len(ps1_hof) == 50, f"Expected 50 PS1 Hall of Fame entries, got {len(ps1_hof)}"
         assert sorted(g["rank"] for g in ps1_hof) == list(range(1, 51)), "PS1 Hall of Fame ranks must be 1..50"
         assert len({g["id"] for g in games}) == len(games), "Duplicate game ids in catalog"
         for asset in ["/js/nexus.js", "/js/player.js", "/js/controller.js", "/js/netplay.js", "/js/qr.js", "/css/nexus.css"]:
             with urllib.request.urlopen(BASE_URL + asset, timeout=4) as r:
                 assert r.status == 200, f"Asset {asset} failed"
-        print(f"[PASS] Functional: 247 NES/GB + 50 PS1 Hall of Fame ({len(games)} total) & all active assets verified")
+        print(f"[PASS] Functional: 253 NES/GB + 50 PS1 Hall of Fame ({len(games)} total) & all active assets verified")
 
         # 4. A07: CSWSH Origin check
         s_evil, resp_evil = ws_connect(origin="https://evil.attacker")
