@@ -795,31 +795,7 @@ body {
     text-shadow: 0 0 4px rgba(51,255,51,0.4);
 }
 
-.badge-console-ps1 {
-    font-family: var(--font-pixel);
-    font-size: 8px;
-    background: linear-gradient(135deg, rgba(56,189,248,0.15), rgba(167,139,250,0.15));
-    border: 2px solid rgba(56, 189, 248, 0.5);
-    color: #7dd3fc;
-    padding: 3px 7px;
-    border-radius: var(--radius-sm);
-    text-transform: uppercase;
-    text-shadow: 0 0 4px rgba(56,189,248,0.4);
-}
 
-.badge-insert-disc {
-    font-family: var(--font-pixel);
-    font-size: 8px;
-    border: 2px dashed rgba(255, 209, 102, 0.6);
-    color: #ffd166;
-    padding: 3px 7px;
-    border-radius: var(--radius-sm);
-    text-transform: uppercase;
-}
-
-.nexus-game-card.card-no-disc .card-cover-container {
-    filter: grayscale(0.85) brightness(0.6);
-}
 
 .badge-console-gbc {
     font-family: var(--font-pixel);

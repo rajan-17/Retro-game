@@ -18,26 +18,6 @@ A high-speed, browser-based **Multi-Console Retro Arcade** with an authentic 198
 
 ---
 
-## 💿 PlayStation (PS1) + Top 50 Hall of Fame
-
-PS1 games run in the browser via [EmulatorJS](https://github.com/EmulatorJS/EmulatorJS) 4.2.3 (GPL-3.0, vendored in `emulatorjs/data/`) using the **PCSX-ReARMed** core.
-
-- The **💿 PS1 Top 50 Hall of Fame** filter lists 50 classics (`ps1_catalog.py`) with box art. The ranking is an editorial consensus, not one publication's list.
-- **No games are included.** Copy your own disc backups into `roms/ps1/`. They're detected within ~5 seconds and matched to the Hall of Fame by filename (e.g. `Final Fantasy VII (USA) (Disc 1).chd`).
-- Formats: **`.chd` (recommended)**, `.pbp`, `.iso`, single-track `.bin`/`.img`, or a `.zip`/`.7z` containing a `.cue` + `.bin` set.
-- **Free homebrew to test with** (downloaded from each author's GitHub releases into `roms/ps1/`):
-  - [Cave Story PS1 port (DoukutsuPSX)](https://github.com/fgsfdsfgs/doukutsupsx/releases): `doukutsu_r7_us.iso`
-  - [Tetrade](https://github.com/Logan-Campbell/Tetrade/releases) (MIT): `TETRADE_PSX.bin`
-  - [BuzzyBee](https://github.com/NDR008/BuzzyBee/releases): keep the release `.zip` as-is (it has a CD-audio track that needs its `.cue`)
-  - [240p Test Suite](https://github.com/filipalac/240pTestSuite-PS1/releases) (GPL-2.0): video/controller test tool
-- **BIOS (optional, recommended):** put your own `scph5501.bin` (or `scph1001.bin` / `scph7001.bin` / `scph101.bin`) in `bios/`. Without it, the core uses its built-in HLE BIOS, which runs most games.
-- Multi-disc games boot disc 1. Use a single multi-disc `.pbp`, or swap discs from the EmulatorJS menu.
-- `roms/ps1/` and `bios/` are git-ignored.
-- PS1 games support local controls and gamepads only. The 2-device streaming / phone controller is NES-only for now.
-- Refresh box art with `python scripts/fetch_ps1_covers.py` (uses libretro-thumbnails).
-
----
-
 ## 🚀 Quick Start
 
 ```bash

@@ -108,17 +108,7 @@ def run_suite():
             "/public_url.txt",
             "/../../etc/passwd",
             "/%2e%2e/etc/passwd",
-            # PlayStation additions: source, BIOS dir, placeholders and traversal out of roms/ps1/
-            "/ps1_catalog.py",
-            "/scripts/fetch_ps1_covers.py",
-            "/bios/",
-            "/bios/.gitkeep",
-            "/bios/evil.bin",
-            "/roms/ps1/",
-            "/roms/ps1/.gitkeep",
-            "/roms/ps1/..%2F..%2Fserver.py",
-            "/emulatorjs/",
-            "/emulatorjs/data/LICENSE",
+            "/server.py",
         ]
         for p in blocked_paths:
             try:
@@ -145,39 +135,17 @@ def run_suite():
                 assert "onerror=" not in body.lower(), f"Inline onerror in {page}"
         print("[PASS] A05/A03: Strict CSP & OWASP security headers verified on all pages")
 
-        # 2b. PS1 player: EmulatorJS needs eval/WebAssembly/blob workers, so it gets a looser CSP.
-        # That relaxation must stay scoped to /ps1.html + /emulatorjs/ and never leak elsewhere.
-        for page in ["/ps1.html", "/emulatorjs/data/loader.js"]:
-            with urllib.request.urlopen(BASE_URL + page, timeout=4) as r:
-                assert r.status == 200, page
-                hdrs = {k.lower(): v for k, v in r.headers.items()}
-                csp = hdrs.get("content-security-policy", "")
-                assert "script-src 'self' blob:" in csp and "'wasm-unsafe-eval'" in csp, csp
-                assert "frame-ancestors 'self'" in csp and "object-src 'none'" in csp, csp
-                assert "http:" not in csp and "https:" not in csp, f"PS1 CSP allows remote origins: {csp}"
-                assert hdrs.get("x-content-type-options") == "nosniff"
-                if page.endswith(".html"):
-                    body = r.read().decode("utf-8")
-                    assert not re.search(r"<script(?![^>]*\bsrc=)[^>]*>", body, re.I), "Inline script in /ps1.html"
-        with urllib.request.urlopen(BASE_URL + "/api/ps1", timeout=4) as r:
-            assert "bios" in json.loads(r.read().decode("utf-8"))
-        print("[PASS] A05: PS1 emulator CSP relaxation is scoped to /ps1.html + /emulatorjs/ only")
-
         # 3. Functional API & Active Assets
-        # Catalog = 253 NES/Famicom/Game Boy titles + the 50-entry PS1 Hall of Fame (always listed,
-        # even before discs are added). Extra local PS1 discs (git-ignored) may add more entries.
+        # Catalog = 253 NES/Famicom/Game Boy titles.
         with urllib.request.urlopen(BASE_URL + "/api/games", timeout=4) as r:
             games = json.loads(r.read().decode("utf-8"))
-        retro = [g for g in games if not g.get("ps1")]
-        ps1_hof = [g for g in games if g.get("ps1_top50")]
-        assert len(retro) == 253, f"Expected 253 NES/GB games, got {len(retro)}"
-        assert len(ps1_hof) == 50, f"Expected 50 PS1 Hall of Fame entries, got {len(ps1_hof)}"
-        assert sorted(g["rank"] for g in ps1_hof) == list(range(1, 51)), "PS1 Hall of Fame ranks must be 1..50"
+        assert len(games) == 253, f"Expected 253 NES/GB games, got {len(games)}"
+        assert all(not g.get("ps1") for g in games), "Found unexpected PS1 games in catalog"
         assert len({g["id"] for g in games}) == len(games), "Duplicate game ids in catalog"
         for asset in ["/js/nexus.js", "/js/player.js", "/js/controller.js", "/js/netplay.js", "/js/qr.js", "/css/nexus.css"]:
             with urllib.request.urlopen(BASE_URL + asset, timeout=4) as r:
                 assert r.status == 200, f"Asset {asset} failed"
-        print(f"[PASS] Functional: 253 NES/GB + 50 PS1 Hall of Fame ({len(games)} total) & all active assets verified")
+        print(f"[PASS] Functional: {len(games)} NES/GB titles & all active assets verified")
 
         # 4. A07: CSWSH Origin check
         s_evil, resp_evil = ws_connect(origin="https://evil.attacker")
